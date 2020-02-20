@@ -191,7 +191,6 @@ class Chatbot:
 
         @Kayla
         """
-        print([i for i in self.title_names if i.find(title) != -1])
         return [i for i in self.title_names if i.find(title) != -1]
 
 
@@ -218,7 +217,10 @@ class Chatbot:
         sentiment = 0
 
         for w in preprocessed_input:
-            sentiment += self.sentiment[w]
+            if w in self.sentiment:
+                sentiment += self.sentiment[w]
+
+            #TODO
 
         return -1 if sentiment < 0 else 1
 
@@ -285,7 +287,7 @@ class Chatbot:
         :param candidates: a list of movie indices
         :returns: a list of indices corresponding to the movies identified by the clarification
 
-        @Ella
+        @ Julia
         """
         pass
 
@@ -371,7 +373,7 @@ class Chatbot:
         :returns: a list of k movie indices corresponding to movies in ratings_matrix,
           in descending order of recommendation
 
-        @Ella @Max
+        @Ella @Max @Julia
         """
 
         #######################################################################################
