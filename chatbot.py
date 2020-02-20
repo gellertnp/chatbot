@@ -255,8 +255,32 @@ class Chatbot:
 
         @ Max
         """
-
-        pass
+        movies = []
+        length = len(title)
+        for candidate in self.titles[:,0]:
+            if math.abs(len(candidate) - length) <= max_distance:
+                dist = get_edit_distance(candidate, title)
+                if dist <= max_distance:
+                    if dist < max_distance:
+                        movies = []
+                        max_distance = dist
+                    movies.append(self.titles[candidate])
+        return movies
+    
+    def get_edit_distance(word1, word2):
+        """helper method for find_movies_closest_to_title"""
+        distances = np.zeroes((len(word1), len(word2)))
+        for i in range (len(word1)):
+            distances[i][0] = i
+        for i in range (len(word2)):
+            distances[0][1] = i
+        for i in range (1,len(word1)):
+            for j in range (1,len(word2)):
+                diag = 2
+                if word1[i] == word2[j]:
+                    diag = 0
+                distances[i][j] = min(distances[i-1][j] + 1, distances[i][j-1] + 1, distances[i-1][j-1] + diag)
+        return distances[len(word1)][len(word2)]
 
     def disambiguate(self, clarification, candidates):
         """Creative Feature: Given a list of movies that the user could be talking about
