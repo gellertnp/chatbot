@@ -45,7 +45,10 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        greeting_message = "Hello! Are you a human searching for a couple hours of entertainment that wants an opinion from a lovely but admitadly idiotic chatbot? If so, you're in the right place! How can I best aid your decision making processes?"
+        greeting_message = "Hello! Are you a human searching for a couple hours of \
+        entertainment and want an opinion from a lovely but admittedly idiotic \
+        chatbot? If so, then you're in the right place! How can I best aid your \
+        decision making process?"
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -59,7 +62,8 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        goodbye_message = "Hope your intended entertainment plans work out and your friends don't flake! Have a nice life."
+        goodbye_message = "Hope your intended entertainment plans work out \
+        and your friends don't flake! Have a nice life."
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -96,6 +100,7 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
+
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
@@ -314,7 +319,7 @@ class Chatbot:
         binarized_ratings[np.nonzero(binarized_ratings)] -= threshold
         binarized_ratings[binarized_ratings < 0] = -1
         binarized_ratings[binarized_ratings > 0] = 1
-        
+
 
         #############################################################################
         #                             END OF YOUR CODE                              #
