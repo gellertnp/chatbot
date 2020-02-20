@@ -296,7 +296,12 @@ class Chatbot:
 
         @ Julia
         """
-        pass
+
+        newCandidates = []
+        for i in candidates:
+            if clarification in self.titles[i]: #is year stored separately?
+                newCandidates.append(i)
+        return newCandidates
 
     #############################################################################
     # 3. Movie Recommendation helper functions                                  #
@@ -349,12 +354,16 @@ class Chatbot:
 
         :returns: the cosine similarity between the two vectors
 
-        @Kayla
+        @Julia
         """
         #############################################################################
         # TODO: Compute cosine similarity between the two vectors.
         #############################################################################
-        similarity = 0
+        numerator = np.dot(u,v)
+        denominator = np.linalg.norm(u) * np.linalg.norm(v)
+        if denominator == np.nan:
+            return 0
+        similarity = numerator/denominator
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -393,7 +402,27 @@ class Chatbot:
         #######################################################################################
 
         # Populate this list with k movie indices to recommend to the user.
-        recommendations = []
+        recommendations = [0] * k
+        rated = []
+        predicted = {}        
+        #For all movies, if it wasn't user-rated, calculate and keep score
+        for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
+            if value == 0: #movie not in user_ratings:
+                score = 0
+                for ranked in user_ratings:
+                    score += user_ratings[ranked] * self.similarity(ratings_matrix[ranked], ratings_matrix[index])
+                predicted[index] = score
+        top = {}
+        for i, val in enumerate(predicted):
+            top[i] = val
+        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+        #add sorted top k to recommendations
+        for i in range(k):
+            recommendations[i] = top[i][1] 
+        for i in range(k//2):
+            temp = recommendations[i]
+            recommendations[i] = recommendations[k-1-i]
+            recommendations[k-1-i] = temp
 
         #############################################################################
         #                             END OF YOUR CODE                              #
