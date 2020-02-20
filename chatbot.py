@@ -45,7 +45,7 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        greeting_message = "How can I help you?"
+        greeting_message = "Hello! Are you a human searching for a couple hours of entertainment that wants an opinion from a lovely but admitadly idiotic chatbot? If so, you're in the right place! How can I best aid your decision making processes?"
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -59,7 +59,7 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        goodbye_message = "Have a nice day!"
+        goodbye_message = "Hope your intended entertainment plans work out and your friends don't flake! Have a nice life."
 
         #############################################################################
         #                             END OF YOUR CODE                              #
