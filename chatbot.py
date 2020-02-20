@@ -95,10 +95,13 @@ class Chatbot:
         # it is highly recommended.                                                 #
         # @Ella @Max
         #############################################################################
+        input = self.preprocess(line)
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
             response = "I processed {} in starter mode!!".format(line)
+
+            print(self.extract_titles(input))
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -151,9 +154,17 @@ class Chatbot:
         :param preprocessed_input: a user-supplied line of text that has been pre-processed with preprocess()
         :returns: list of movie titles that are potentially in the text
 
-        @Kayla
+        @Ella
         """
-        return []
+        titles = []
+        start = preprocessed_input.find("\"")
+        while start != -1:
+            end = preprocessed_input.find("\"", start+1)
+            title = preprocessed_input[start+1:end]
+            titles.append(str(title))
+            start = preprocessed_input.find("\"", end+1)
+
+        return titles
 
     def find_movies_by_title(self, title):
         """ Given a movie title, return a list of indices of matching movies.
@@ -194,7 +205,13 @@ class Chatbot:
 
         @Ella
         """
-        return 0
+        # TODO: add -2/2 weighting
+        sentiment = 0
+
+        for w in preprocessed_input:
+            sentiment += self.sentiment[w]
+
+        return -1 if sentiment < 0 else 1
 
     def extract_sentiment_for_movies(self, preprocessed_input):
         """Creative Feature: Extracts the sentiments from a line of pre-processed text
