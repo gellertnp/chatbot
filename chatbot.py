@@ -23,9 +23,12 @@ class Chatbot:
         self.titles, ratings = movielens.ratings()
         self.sentiment = movielens.sentiment()
 
+        self.title_names = [i[0] for i in self.titles]
+
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
+        ratings = self.binarize(ratings, 2.5)
         #############################################################################
 
         # Binarize the movie ratings before storing the binarized matrix.
@@ -45,7 +48,10 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        greeting_message = "Hello! Are you a human searching for a couple hours of entertainment that wants an opinion from a lovely but admitadly idiotic chatbot? If so, you're in the right place! How can I best aid your decision making processes?"
+        greeting_message = "Hello! Are you a human searching for a couple hours of \
+        entertainment and want an opinion from a lovely but admittedly idiotic \
+        chatbot? If so, then you're in the right place! How can I best aid your \
+        decision making process?"
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -59,7 +65,8 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        goodbye_message = "Hope your intended entertainment plans work out and your friends don't flake! Have a nice life."
+        goodbye_message = "Hope your intended entertainment plans work out \
+        and your friends don't flake! Have a nice life."
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -96,13 +103,13 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
+
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
             response = "I processed {} in starter mode!!".format(line)
 
             print(self.extract_titles(input))
-
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -184,16 +191,9 @@ class Chatbot:
 
         @Kayla
         """
-        matching = []
 
-        if title not in self.titles: 
-            return []
-        else: 
-            for listedTitle in range(len(self.titles)): 
-                if self.titles[titleIndex] == title:
-                    matching.append(titleIndex)
+        return [i for i in self.title_names if i.find(title) != -1]
 
-        return matching
 
     def extract_sentiment(self, preprocessed_input):
         """Extract a sentiment rating from a line of pre-processed text.
@@ -323,7 +323,7 @@ class Chatbot:
         binarized_ratings[np.nonzero(binarized_ratings)] -= threshold
         binarized_ratings[binarized_ratings < 0] = -1
         binarized_ratings[binarized_ratings > 0] = 1
-        
+
 
         #############################################################################
         #                             END OF YOUR CODE                              #
