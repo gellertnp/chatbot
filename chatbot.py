@@ -23,6 +23,8 @@ class Chatbot:
         self.titles, ratings = movielens.ratings()
         self.sentiment = movielens.sentiment()
 
+        self.title_names = [i[0] for i in self.titles]
+
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
@@ -46,7 +48,10 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        greeting_message = "Hello! Are you a human searching for a couple hours of entertainment that wants an opinion from a lovely but admittedly idiotic chatbot? If so, you're in the right place! How can I best aid your decision making processes?"
+        greeting_message = "Hello! Are you a human searching for a couple hours of \
+        entertainment and want an opinion from a lovely but admittedly idiotic \
+        chatbot? If so, then you're in the right place! How can I best aid your \
+        decision making process?"
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -60,7 +65,8 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        goodbye_message = "Hope your intended entertainment plans work out and your friends don't flake! Have a nice life."
+        goodbye_message = "Hope your intended entertainment plans work out \
+        and your friends don't flake! Have a nice life."
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -97,13 +103,14 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
+
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
             response = "I processed {} in starter mode!!".format(line)
-
+            # print(self.title_names)
+            print(self.find_movies_by_title(self.preprocess('The American President')))
             print(self.extract_titles(input))
-
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -129,7 +136,12 @@ class Chatbot:
         # implementation to do any generic preprocessing, feel free to leave this   #
         # method unmodified.                                                        #
         #############################################################################
-
+        # articles = [" a ", " an ", " the "]
+        # for a in articles:
+        #     text = text.replace(a, " ")
+        # caps = ["A ", "The ", "An "]
+        # for a in caps:
+        #     text = text.replace(a, "")
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -183,9 +195,12 @@ class Chatbot:
         :param title: a string containing a movie title
         :returns: a list of indices of matching movies
 
-        @Kayla
+        @Kayla Ella
         """
-        return []
+        title = self.remove_articles(title)
+        # return [i for i in self.title_names if i.find(title) != -1]
+        return [indx for indx, i in enumerate(self.title_names) if i.find(title) != -1]
+
 
     def extract_sentiment(self, preprocessed_input):
         """Extract a sentiment rating from a line of pre-processed text.
@@ -206,12 +221,29 @@ class Chatbot:
 
         @Ella
         """
-        # TODO: add -2/2 weighting
+        # TODO: add -2/2 weighting, NEGATIONS
         sentiment = 0
 
-        for w in preprocessed_input:
-            sentiment += self.sentiment[w]
+        #TODO: split words and remove movie titles
+        titles = self.extract_titles(preprocessed_input)
+        # print(titles)
+        for t in titles:
+            preprocessed_input = preprocessed_input.replace(t, '')
+        # print("STRING", preprocessed_input)
+        # print(self.sentiment.keys())
+        for w in preprocessed_input.split():
+            # print("HI", w, w in self.sentiment)
+            if w in self.sentiment:
+                senti = self.sentiment[w]
+                if senti == 'pos':
+                    sentiment += 1
+                elif senti == 'neg':
+                    sentiment += -1
+                # print("HI", w, self.sentiment[w])
 
+            #TODO
+        # print("HELLO",sentiment)
+        if sentiment == 0: return 0
         return -1 if sentiment < 0 else 1
 
     def extract_sentiment_for_movies(self, preprocessed_input):
@@ -257,27 +289,29 @@ class Chatbot:
         """
         movies = []
         length = len(title)
-        for candidate in self.titles[:,0]:
-            if math.abs(len(candidate) - length) <= max_distance:
-                dist = get_edit_distance(candidate, title)
+        for candidate in self.title_names:
+            index = self.title_names.index(candidate)
+            candidate = candidate[:candidate.find(' (')]
+            if np.absolute(len(candidate) - length) <= max_distance:
+                dist = self.get_edit_distance(candidate, title)
                 if dist <= max_distance:
                     if dist < max_distance:
                         movies = []
                         max_distance = dist
-                    movies.append(self.titles[candidate])
+                    movies.append(index)
         return movies
     
-    def get_edit_distance(word1, word2):
+    def get_edit_distance(self, word1, word2):
         """helper method for find_movies_closest_to_title"""
-        distances = np.zeroes((len(word1), len(word2)))
-        for i in range (len(word1)):
+        distances = np.zeros((len(word1) + 1, len(word2) + 1))
+        for i in range (len(word1) + 1):
             distances[i][0] = i
-        for i in range (len(word2)):
-            distances[0][1] = i
-        for i in range (1,len(word1)):
-            for j in range (1,len(word2)):
+        for i in range (len(word2) + 1):
+            distances[0][i] = i
+        for i in range (1,len(word1) + 1):
+            for j in range (1,len(word2) + 1):
                 diag = 2
-                if word1[i] == word2[j]:
+                if word1[i - 1] == word2[j - 1]:
                     diag = 0
                 distances[i][j] = min(distances[i-1][j] + 1, distances[i][j-1] + 1, distances[i-1][j-1] + diag)
         return distances[len(word1)][len(word2)]
@@ -301,9 +335,14 @@ class Chatbot:
         :param candidates: a list of movie indices
         :returns: a list of indices corresponding to the movies identified by the clarification
 
-        @Ella
+        @ Julia
         """
-        pass
+
+        newCandidates = []
+        for i in candidates:
+            if clarification in self.titles[i]: #is year stored separately?
+                newCandidates.append(i)
+        return newCandidates
 
     #############################################################################
     # 3. Movie Recommendation helper functions                                  #
@@ -339,7 +378,7 @@ class Chatbot:
         binarized_ratings[np.nonzero(binarized_ratings)] -= threshold
         binarized_ratings[binarized_ratings < 0] = -1
         binarized_ratings[binarized_ratings > 0] = 1
-        
+
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -356,17 +395,32 @@ class Chatbot:
 
         :returns: the cosine similarity between the two vectors
 
-        @Kayla
+        @Julia
+        @Kayla Ella
         """
         #############################################################################
         # TODO: Compute cosine similarity between the two vectors.
         #############################################################################
-        similarity = 0
+        numerator = np.dot(u,v)
+        denominator = np.linalg.norm(u) * np.linalg.norm(v)
+        if denominator == np.nan:
+            return 0
+        similarity = numerator/denominator
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
         return similarity
 
+
+    def remove_articles(self, text):
+        articles = [" a ", " an ", " the "]
+        for a in articles:
+            text = text.replace(a, " ")
+        caps = ["A ", "The ", "An "]
+        for a in caps:
+            text = text.replace(a, "")
+
+        return text
     def recommend(self, user_ratings, ratings_matrix, k=10, creative=False):
         """Generate a list of indices of movies to recommend using collaborative filtering.
 
@@ -387,7 +441,7 @@ class Chatbot:
         :returns: a list of k movie indices corresponding to movies in ratings_matrix,
           in descending order of recommendation
 
-        @Ella @Max
+        @Ella @Max @Julia
         """
 
         #######################################################################################
@@ -400,7 +454,27 @@ class Chatbot:
         #######################################################################################
 
         # Populate this list with k movie indices to recommend to the user.
-        recommendations = []
+        recommendations = [0] * k
+        rated = []
+        predicted = {}        
+        #For all movies, if it wasn't user-rated, calculate and keep score
+        for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
+            if value == 0: #movie not in user_ratings:
+                score = 0
+                for ranked in user_ratings:
+                    score += user_ratings[ranked] * self.similarity(ratings_matrix[ranked], ratings_matrix[index])
+                predicted[index] = score
+        top = {}
+        for i, val in enumerate(predicted):
+            top[i] = val
+        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+        #add sorted top k to recommendations
+        for i in range(k):
+            recommendations[i] = top[i][1] 
+        for i in range(k//2):
+            temp = recommendations[i]
+            recommendations[i] = recommendations[k-1-i]
+            recommendations[k-1-i] = temp
 
         #############################################################################
         #                             END OF YOUR CODE                              #
