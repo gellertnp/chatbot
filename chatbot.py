@@ -23,6 +23,8 @@ class Chatbot:
         self.titles, ratings = movielens.ratings()
         self.sentiment = movielens.sentiment()
 
+        self.title_names = [i[0] for i in self.titles]
+
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
@@ -108,7 +110,6 @@ class Chatbot:
             response = "I processed {} in starter mode!!".format(line)
 
             print(self.extract_titles(input))
-
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -190,7 +191,9 @@ class Chatbot:
 
         @Kayla
         """
-        return []
+        print([i for i in self.title_names if i.find(title) != -1])
+        return [i for i in self.title_names if i.find(title) != -1]
+
 
     def extract_sentiment(self, preprocessed_input):
         """Extract a sentiment rating from a line of pre-processed text.
