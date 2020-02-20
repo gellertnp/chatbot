@@ -108,7 +108,8 @@ class Chatbot:
             response = "I processed {} in creative mode!!".format(line)
         else:
             response = "I processed {} in starter mode!!".format(line)
-
+            # print(self.title_names)
+            print(self.find_movies_by_title(self.preprocess('The American President')))
             print(self.extract_titles(input))
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -135,7 +136,12 @@ class Chatbot:
         # implementation to do any generic preprocessing, feel free to leave this   #
         # method unmodified.                                                        #
         #############################################################################
-
+        articles = [" a ", " an ", " the "]
+        for a in articles:
+            text = text.replace(a, " ")
+        caps = ["A ", "The ", "An "]
+        for a in caps:
+            text = text.replace(a, "")
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -191,6 +197,7 @@ class Chatbot:
 
         @Kayla
         """
+
         return [i for i in self.title_names if i.find(title) != -1]
 
 
