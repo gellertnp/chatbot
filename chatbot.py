@@ -197,7 +197,7 @@ class Chatbot:
 
         @Kayla
         """
-
+        title = self.preprocess(title)
         return [i for i in self.title_names if i.find(title) != -1]
 
 
