@@ -174,7 +174,7 @@ class Chatbot:
         containing all of the indices of these matching movies.
         - If exactly one movie is found that matches the given title, return a list
         that contains the index of that matching movie.
-
+        
         Example:
           ids = chatbot.find_movies_by_title('Titanic')
           print(ids) // prints [1359, 1953]
@@ -184,7 +184,16 @@ class Chatbot:
 
         @Kayla
         """
-        return []
+        matching = []
+
+        if title not in self.titles: 
+            return []
+        else: 
+            for listedTitle in range(len(self.titles)): 
+                if self.titles[titleIndex] == title:
+                    matching.append(titleIndex)
+
+        return matching
 
     def extract_sentiment(self, preprocessed_input):
         """Extract a sentiment rating from a line of pre-processed text.
