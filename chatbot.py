@@ -13,7 +13,7 @@ class Chatbot:
 
     def __init__(self, creative=False):
         # The chatbot's default name is `moviebot`. Give your chatbot a new name.
-        self.name = 'moviebot'
+        self.name = 'Marseille the Shell'
 
         self.creative = creative
 
@@ -24,7 +24,8 @@ class Chatbot:
         self.sentiment = movielens.sentiment()
 
         #############################################################################
-        # TODO: Binarize the movie ratings matrix.                                  #
+        # TODO: Binarize the movie ratings matrix.
+        # @ Max
         #############################################################################
 
         # Binarize the movie ratings before storing the binarized matrix.
@@ -41,6 +42,7 @@ class Chatbot:
         """Return a message that the chatbot uses to greet the user."""
         #############################################################################
         # TODO: Write a short greeting message                                      #
+        # @Kayla
         #############################################################################
 
         greeting_message = "How can I help you?"
@@ -54,6 +56,7 @@ class Chatbot:
         """Return a message that the chatbot uses to bid farewell to the user."""
         #############################################################################
         # TODO: Write a short farewell message                                      #
+        # @Kayla
         #############################################################################
 
         goodbye_message = "Have a nice day!"
@@ -90,6 +93,7 @@ class Chatbot:
         # TODO: Implement the extraction and transformation in this method,         #
         # possibly calling other functions. Although modular code is not graded,    #
         # it is highly recommended.                                                 #
+        # @Ella @Max
         #############################################################################
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
@@ -146,6 +150,8 @@ class Chatbot:
 
         :param preprocessed_input: a user-supplied line of text that has been pre-processed with preprocess()
         :returns: list of movie titles that are potentially in the text
+
+        @Kayla
         """
         return []
 
@@ -164,6 +170,8 @@ class Chatbot:
 
         :param title: a string containing a movie title
         :returns: a list of indices of matching movies
+
+        @Kayla
         """
         return []
 
@@ -183,6 +191,8 @@ class Chatbot:
 
         :param preprocessed_input: a user-supplied line of text that has been pre-processed with preprocess()
         :returns: a numerical value for the sentiment of the text
+
+        @Ella
         """
         return 0
 
@@ -202,6 +212,8 @@ class Chatbot:
         :param preprocessed_input: a user-supplied line of text that has been pre-processed with preprocess()
         :returns: a list of tuples, where the first item in the tuple is a movie title,
           and the second is the sentiment in the text toward that movie
+
+        @ Ella
         """
         pass
 
@@ -222,6 +234,8 @@ class Chatbot:
         :param title: a potentially misspelled title
         :param max_distance: the maximum edit distance to search for
         :returns: a list of movie indices with titles closest to the given title and within edit distance max_distance
+
+        @ Max
         """
 
         pass
@@ -244,6 +258,8 @@ class Chatbot:
         :param clarification: user input intended to disambiguate between the given movies
         :param candidates: a list of movie indices
         :returns: a list of indices corresponding to the movies identified by the clarification
+
+        @Ella
         """
         pass
 
@@ -267,6 +283,8 @@ class Chatbot:
         :param threshold: Numerical rating above which ratings are considered positive
 
         :returns: a binarized version of the movie-rating matrix
+
+        @Max
         """
         #############################################################################
         # TODO: Binarize the supplied ratings matrix. Do not use the self.ratings   #
@@ -290,6 +308,8 @@ class Chatbot:
         :param v: another vector, as a 1D numpy array
 
         :returns: the cosine similarity between the two vectors
+
+        @Kayla
         """
         #############################################################################
         # TODO: Compute cosine similarity between the two vectors.
@@ -319,6 +339,8 @@ class Chatbot:
 
         :returns: a list of k movie indices corresponding to movies in ratings_matrix,
           in descending order of recommendation
+
+        @Ella @Max
         """
 
         #######################################################################################
@@ -351,6 +373,7 @@ class Chatbot:
 
     #############################################################################
     # 5. Write a description for your chatbot here!                             #
+    # @Kayla
     #############################################################################
     def intro(self):
         """Return a string to use as your chatbot's description for the user.
