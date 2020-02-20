@@ -136,12 +136,12 @@ class Chatbot:
         # implementation to do any generic preprocessing, feel free to leave this   #
         # method unmodified.                                                        #
         #############################################################################
-        articles = [" a ", " an ", " the "]
-        for a in articles:
-            text = text.replace(a, " ")
-        caps = ["A ", "The ", "An "]
-        for a in caps:
-            text = text.replace(a, "")
+        # articles = [" a ", " an ", " the "]
+        # for a in articles:
+        #     text = text.replace(a, " ")
+        # caps = ["A ", "The ", "An "]
+        # for a in caps:
+        #     text = text.replace(a, "")
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -195,10 +195,11 @@ class Chatbot:
         :param title: a string containing a movie title
         :returns: a list of indices of matching movies
 
-        @Kayla
+        @Kayla Ella
         """
-        title = self.preprocess(title)
-        return [i for i in self.title_names if i.find(title) != -1]
+        title = self.remove_articles(title)
+        # return [i for i in self.title_names if i.find(title) != -1]
+        return [indx for indx, i in enumerate(self.title_names) if i.find(title) != -1]
 
 
     def extract_sentiment(self, preprocessed_input):
@@ -220,15 +221,29 @@ class Chatbot:
 
         @Ella
         """
-        # TODO: add -2/2 weighting
+        # TODO: add -2/2 weighting, NEGATIONS
         sentiment = 0
 
-        for w in preprocessed_input:
+        #TODO: split words and remove movie titles
+        titles = self.extract_titles(preprocessed_input)
+        # print(titles)
+        for t in titles:
+            preprocessed_input = preprocessed_input.replace(t, '')
+        # print("STRING", preprocessed_input)
+        # print(self.sentiment.keys())
+        for w in preprocessed_input.split():
+            # print("HI", w, w in self.sentiment)
             if w in self.sentiment:
-                sentiment += self.sentiment[w]
+                senti = self.sentiment[w]
+                if senti == 'pos':
+                    sentiment += 1
+                elif senti == 'neg':
+                    sentiment += -1
+                # print("HI", w, self.sentiment[w])
 
             #TODO
-
+        # print("HELLO",sentiment)
+        if sentiment == 0: return 0
         return -1 if sentiment < 0 else 1
 
     def extract_sentiment_for_movies(self, preprocessed_input):
@@ -349,17 +364,27 @@ class Chatbot:
 
         :returns: the cosine similarity between the two vectors
 
-        @Kayla
+        @Kayla Ella
         """
         #############################################################################
         # TODO: Compute cosine similarity between the two vectors.
         #############################################################################
-        similarity = 0
+        similarity = np.dot(u,v)/(np.linalg.norm(u)*np.linalg.norm(v))
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
         return similarity
 
+
+    def remove_articles(self, text):
+        articles = [" a ", " an ", " the "]
+        for a in articles:
+            text = text.replace(a, " ")
+        caps = ["A ", "The ", "An "]
+        for a in caps:
+            text = text.replace(a, "")
+
+        return text
     def recommend(self, user_ratings, ratings_matrix, k=10, creative=False):
         """Generate a list of indices of movies to recommend using collaborative filtering.
 
