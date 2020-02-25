@@ -231,15 +231,19 @@ class Chatbot:
             preprocessed_input = preprocessed_input.replace(t, '')
         # print("STRING", preprocessed_input)
         # print(self.sentiment.keys())
+        negate = 1
         for w in preprocessed_input.split():
             # print("HI", w, w in self.sentiment)
             if w in self.sentiment:
                 senti = self.sentiment[w]
                 if senti == 'pos':
-                    sentiment += 1
+                    sentiment += negate*1
                 elif senti == 'neg':
-                    sentiment += -1
+                    sentiment += negate*-1
                 # print("HI", w, self.sentiment[w])
+                negate = 1
+            elif w == 'not' or w.find('n\'t') != -1:
+                negate = -1
 
             #TODO
         # print("HELLO",sentiment)
