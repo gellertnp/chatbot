@@ -10,25 +10,25 @@
 
 FEATURE - Identifying movies without quotation marks and correct capitalization (part 1): NO
 FEATURE - Identifying movies without quotation marks and correct capitalization (part 2): NO
-FEATURE - Alternate/foreign titles: NO
-FEATURE - Disambiguation (part 1): NO
+FEATURE - Alternate/foreign titles: YES
+FEATURE - Disambiguation (part 1): YES
 FEATURE - Fine-grained sentiment extraction: NO
-FEATURE - Spell-correcting fallback for find_movies_by_title: NO
-FEATURE - Extracting sentiment with multiple-movie input: NO
-FEATURE - Disambiguation (part 2): NO
-FEATURE - Dialogue for spell-checking: NO
-FEATURE - Dialogue for disambiguation: NO
-FEATURE - Communicating sentiments and movies extracted to the user given multiple-movie input: NO
-FEATURE - Understanding references to things said previously: NO
-FEATURE - Responding to arbitrary input: NO
-FEATURE - Speaking very fluently: NO
-FEATURE - Identifying and responding to emotions: NO
+FEATURE - Spell-correcting fallback for find_movies_by_title: YES
+FEATURE - Extracting sentiment with multiple-movie input: YES
+FEATURE - Disambiguation (part 2): YES
+FEATURE - Dialogue for spell-checking: YES
+FEATURE - Dialogue for disambiguation: YES
+FEATURE - Communicating sentiments and movies extracted to the user given multiple-movie input: YES
+FEATURE - Understanding references to things said previously: YES
+FEATURE - Responding to arbitrary input: YES
+FEATURE - Speaking very fluently: YES
+FEATURE - Identifying and responding to emotions: YES
 Did not implement any of the above features: NO
 
 #########################################################################################
 # Team Contributions                                                                    #
 #########################################################################################
-TODO: Please write a short description of what each team member contributed!
+Please write a short description of what each team member contributed!
 
 
 #########################################################################################

@@ -254,6 +254,7 @@ class Chatbot:
 
 
         # return [i for i in self.title_names if i.find(title) != -1]
+        title = title.lower()
         alternate = self.move_start_article(title)
         return [indx for indx, i in enumerate(self.title_names) if (i.find(title,0) != -1 or i.find(alternate, 0) != -1)]
     
@@ -383,6 +384,7 @@ class Chatbot:
         @ Max
         """
         movies = []
+        title = title.lower()
         length = len(title)
         for candidate in self.title_names:
             index = self.title_names.index(candidate)
