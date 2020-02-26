@@ -106,7 +106,7 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
-        
+
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
@@ -200,7 +200,7 @@ class Chatbot:
         """
         titles = []
 
-        if (preprocessed_input.find("\"") != -1): 
+        if (preprocessed_input.find("\"") != -1):
 
             # if the doc contains quotations
             start = preprocessed_input.find("\"")
@@ -210,19 +210,19 @@ class Chatbot:
                 titles.append(str(title))
                 start = preprocessed_input.find("\"", end+1)
 
-        else : 
+        else :
             # if doc does not contain quotations
             feelingwords  = ["think", "thought", "felt that", "enjoy", "enjoyed", "like", "hate", "hated"]
             endwords = ["was", "is", "has", "\.", "\!", "\,"]
-            for word in feelingwords: 
+            for word in feelingwords:
                 firstletter = preprocessed_input.find(word)
-                if firstletter != -1: 
+                if firstletter != -1:
                     start = firstletter + len(word)
                     for endW in endwords :
                         end = preprocessed_input.find(endW)
-                        if end != -1: 
+                        if end != -1:
                             title = preprocessed_input[start+1: end-1]
-                            titles.append(str(title.lower())) 
+                            titles.append(str(title.lower()))
         return titles
 
     def find_movies_by_title(self, title):
@@ -268,7 +268,8 @@ class Chatbot:
 
         @Ella
         """
-        # TODO: add -2/2 weighting, NEGATIONS
+        
+      # TODO: add -2/2 weighting, NEGATIONS
         sentiment = 0
 
         #TODO: split words and remove movie titles
@@ -278,6 +279,7 @@ class Chatbot:
         #     preprocessed_input = preprocessed_input.replace(t, '')
         # print("STRING", preprocessed_input)
         # print(self.sentiment.keys())
+        negate = 1
         for w in preprocessed_input.split():
             # print("HI", w, w in self.sentiment)
             # if preprocessed_input = " but not ":
@@ -287,10 +289,13 @@ class Chatbot:
             if w in self.sentiment:
                 senti = self.sentiment[w]
                 if senti == 'pos':
-                    sentiment += 1
+                    sentiment += negate*1
                 elif senti == 'neg':
-                    sentiment += -1
+                    sentiment += negate*-1
                 # print("HI", w, self.sentiment[w])
+                negate = 1
+            elif w == 'not' or w.find('n\'t') != -1:
+                negate = -1
 
             #TODO
         # print("HELLO",sentiment)
