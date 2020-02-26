@@ -24,7 +24,7 @@ class Chatbot:
         self.sentiment = movielens.sentiment()
 
         self.title_names = [i[0] for i in self.titles]
-
+        self.userSentiments = {}
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
@@ -103,14 +103,40 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
-
+        response = "" 
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
-            response = "I processed {} in starter mode!!".format(line)
+            curMovies = self.extract_titles(line)
+            if len(curMovies) == 0:
+                response = "Please name a movie!"
+            elif len(curMovies) > 1:
+                if self.extract_sentiment(line)> 0:
+                    sentiment = "liked "
+                else:
+                    sentiment = "didn't like " 
+
+                for m in curMovies:
+                    #if curMovies.index(m) == 0:
+                        #response += "Y"
+                    #else:
+                        #response += "y"
+                    response += "You " + sentiment + m +". "        
+            else:
+                movie = curMovies[0]
+                if self.extract_sentiment(line)> 0:
+                    response = "Yeah, " + movie + " is a great film!"
+                else:
+                    response = "I'm sorry you didn't enjoy " + movie + "." 
+            if len(self.userSentiments) > 5:
+                response += " You've named enough movies for a recommendation, would you like one?"
+            else:
+                response += " Keep rating movies for a recommendation!"
+
+            #response = "I processed {} in starter mode!!".format(line)
             # print(self.title_names)
-            print(self.find_movies_by_title(self.preprocess('The American President')))
-            print(self.extract_titles(input))
+            #print(self.find_movies_by_title(self.preprocess('The American President')))
+            #print(self.extract_titles(input))
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -243,8 +269,15 @@ class Chatbot:
 
             #TODO
         # print("HELLO",sentiment)
+        if sentiment < 0:
+            sentiment = -1
+        else:
+            sentiment = 1
+        for t in titles:
+            print(self.userSentiments)
+            self.userSentiments[t] = sentiment
         if sentiment == 0: return 0
-        return -1 if sentiment < 0 else 1
+        return sentiment
 
     def extract_sentiment_for_movies(self, preprocessed_input):
         """Creative Feature: Extracts the sentiments from a line of pre-processed text
@@ -342,6 +375,8 @@ class Chatbot:
         for i in candidates:
             if clarification in self.titles[i]: #is year stored separately?
                 newCandidates.append(i)
+                print (i)
+        print (newCandidates)
         return newCandidates
 
     #############################################################################
@@ -457,6 +492,7 @@ class Chatbot:
         recommendations = [0] * k
         rated = []
         predicted = {}        
+
         #For all movies, if it wasn't user-rated, calculate and keep score
         for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
             if value == 0: #movie not in user_ratings:
@@ -468,6 +504,7 @@ class Chatbot:
         for i, val in enumerate(predicted):
             top[i] = val
         top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+
         #add sorted top k to recommendations
         for i in range(k):
             recommendations[i] = top[i][1] 
@@ -489,7 +526,7 @@ class Chatbot:
         """Return debug information as a string for the line string from the REPL"""
         # Pass the debug information that you may think is important for your
         # evaluators
-        debug_info = 'debug info'
+        debug_info = disambiguate ("1997", [1359, 2716])
         return debug_info
 
     #############################################################################
