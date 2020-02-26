@@ -4,6 +4,7 @@
 ######################################################################
 import movielens
 
+import re
 import numpy as np
 from PorterStemmer import PorterStemmer
 
@@ -392,13 +393,12 @@ class Chatbot:
 
         @ Julia
         """
-
         newCandidates = []
         for i in candidates:
-            if clarification in self.titles[i]: #is year stored separately?
+            if re.search(clarification, self.titles[i][0]): 
                 newCandidates.append(i)
-                print (i)
-        print (newCandidates)
+            elif re.search(clarification, self.titles[i][1]):
+                newCandidates.append(i)  
         return newCandidates
 
     #############################################################################
