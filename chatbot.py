@@ -103,7 +103,6 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
-
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
         else:
@@ -170,13 +169,30 @@ class Chatbot:
         @Ella
         """
         titles = []
-        start = preprocessed_input.find("\"")
-        while start != -1:
-            end = preprocessed_input.find("\"", start+1)
-            title = preprocessed_input[start+1:end]
-            titles.append(str(title))
-            start = preprocessed_input.find("\"", end+1)
 
+        if (preprocessed_input.find("\"") != -1): 
+
+            # if the doc contains quotations
+            start = preprocessed_input.find("\"")
+            while start != -1:
+                end = preprocessed_input.find("\"", start+1)
+                title = preprocessed_input[start+1:end]
+                titles.append(str(title))
+                start = preprocessed_input.find("\"", end+1)
+
+        else : 
+            # if doc does not contain quotations
+            feelingwords  = ["think", "thought", "felt that", "enjoy", "enjoyed", "like", "hate", "hated"]
+            endwords = ["was", "is", "has", "\.", "\!", "\,"]
+            for word in feelingwords: 
+                firstletter = preprocessed_input.find(word)
+                if firstletter != -1: 
+                    start = firstletter + len(word)
+                    for endW in endwords :
+                        end = preprocessed_input.find(endW)
+                        if end != -1: 
+                            title = preprocessed_input[start+1: end-1]
+                            titles.append(str(title.lower())) 
         return titles
 
     def find_movies_by_title(self, title):
@@ -198,6 +214,7 @@ class Chatbot:
         @Kayla Ella
         """
         title = self.remove_articles(title)
+
         # return [i for i in self.title_names if i.find(title) != -1]
         return [indx for indx, i in enumerate(self.title_names) if i.find(title) != -1]
 
@@ -231,19 +248,15 @@ class Chatbot:
             preprocessed_input = preprocessed_input.replace(t, '')
         # print("STRING", preprocessed_input)
         # print(self.sentiment.keys())
-        negate = 1
         for w in preprocessed_input.split():
             # print("HI", w, w in self.sentiment)
             if w in self.sentiment:
                 senti = self.sentiment[w]
                 if senti == 'pos':
-                    sentiment += negate*1
+                    sentiment += 1
                 elif senti == 'neg':
-                    sentiment += negate*-1
+                    sentiment += -1
                 # print("HI", w, self.sentiment[w])
-                negate = 1
-            elif w == 'not' or w.find('n\'t') != -1:
-                negate = -1
 
             #TODO
         # print("HELLO",sentiment)
@@ -508,8 +521,8 @@ class Chatbot:
         """
         return """
         Your task is to implement the chatbot as detailed in the PA6 instructions.
-        Remember: in the starter mode, movie names will come in quotation marks and
-        expressions of sentiment will be simple!
+        Remember: in thee starter mode, movie names will come in quotation marks and
+        expressions of sentimnt will be simple!
         Write here the description for your own chatbot!
         """
 
