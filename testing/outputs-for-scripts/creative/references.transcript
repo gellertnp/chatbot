@@ -1,0 +1,38 @@
+Welcome to Stanford CS124's
+ _______  _______         ___
+|       ||   _   |       |   |
+|    _  ||  |_|  | ____  |   |___
+|   |_| ||       ||____| |    _  |
+|    ___||       |       |   | | |
+|   |    |   _   |       |   |_| |
+|___|    |__| |__|       |_______|
+ _______  __   __  _______  _______  _______  _______  _______  __
+|       ||  | |  ||   _   ||       ||  _    ||       ||       ||  |
+|       ||  |_|  ||  |_|  ||_     _|| |_|   ||   _   ||_     _||  |
+|       ||       ||       |  |   |  |       ||  | |  |  |   |  |  |
+|      _||       ||       |  |   |  |  _   | |  |_|  |  |   |  |__|
+|     |_ |   _   ||   _   |  |   |  | |_|   ||       |  |   |   __
+|_______||__| |__||__| |__|  |___|  |_______||_______|  |___|  |__|
+
+
+        Your task is to implement the chatbot as detailed in the PA6 instructions.
+        Remember: in thee starter mode, movie names will come in quotation marks and
+        expressions of sentimnt will be simple!
+        Write here the description for your own chatbot!
+        
+[96mMarseille the Shell> [0mHello! Are you a human searching for a couple hours of         entertainment and want an opinion from a lovely but admittedly idiotic         chatbot? If so, then you're in the right place! How can I best aid your         decision making process?
+> I liked "Blade Runner"
+
+[96mMarseille the Shell> [0mYeah, Blade Runner is a great film! Keep rating movies for a recommendation!
+> But not "Terminator Salvation".
+
+[96mMarseille the Shell> [0mI'm sorry you didn't enjoy Terminator Salvation. Keep rating movies for a recommendation!
+> I saw "Titanic (1997)"
+
+[96mMarseille the Shell> [0mI'm sorry, I'm not quite sure how you felt about Titanic (1997). Keep rating movies for a recommendation!
+> I liked it.
+
+[96mMarseille the Shell> [0mPlease name a movie! Keep rating movies for a recommendation!
+> :quit
+
+[96mMarseille the Shell> [0mHope your intended entertainment plans work out         and your friends don't flake! Have a nice life.
