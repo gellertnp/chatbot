@@ -4,6 +4,7 @@
 ######################################################################
 import movielens
 
+import re
 import numpy as np
 from PorterStemmer import PorterStemmer
 
@@ -113,20 +114,29 @@ class Chatbot:
             response = "I processed {} in creative mode!!".format(line)
         else:
             curMovies = self.extract_titles(line)
+
+            #can't find a movie
             if len(curMovies) == 0:
                 response = "Please name a movie!"
+
+            #More than one listed movie, this could be edited for style
             elif len(curMovies) > 1:
+     
+                #Hold sentiment
                 if self.extract_sentiment(line)> 0:
                     sentiment = "liked "
                 else:
                     sentiment = "didn't like "
 
+                #Echoing ratings
                 for m in curMovies:
                     #if curMovies.index(m) == 0:
                         #response += "Y"
                     #else:
                         #response += "y"
                     response += "You " + sentiment + m +". "
+
+            #one movie
             else:
                 movie = curMovies[0]
                 if self.extract_sentiment(line)> 0:
@@ -138,10 +148,6 @@ class Chatbot:
             else:
                 response += " Keep rating movies for a recommendation!"
 
-            #response = "I processed {} in starter mode!!".format(line)
-            # print(self.title_names)
-            #print(self.find_movies_by_title(self.preprocess('The American President')))
-            #print(self.extract_titles(input))
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -426,13 +432,12 @@ class Chatbot:
 
         @ Julia
         """
-
         newCandidates = []
         for i in candidates:
-            if clarification in self.titles[i]: #is year stored separately?
+            if re.search(clarification, self.titles[i][0]): 
                 newCandidates.append(i)
-                print (i)
-        print (newCandidates)
+            elif re.search(clarification, self.titles[i][1]):
+                newCandidates.append(i)  
         return newCandidates
 
     #############################################################################
