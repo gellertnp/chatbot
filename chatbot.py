@@ -105,48 +105,56 @@ class Chatbot:
         # TODO: Implement the extraction and transformation in this method,         #
         # possibly calling other functions. Although modular code is not graded,    #
         # it is highly recommended.                                                 #
-        # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
 
+        movies = self.extract_titles(line)
         response = ""
-        if self.creative:
-            response = "I processed {} in creative mode!!".format(line)
-        else:
-            curMovies = self.extract_titles(line)
+        curMovies = []
+        for m in movies:
+            curMovies.append(self.find_movies_by_title(m))
 
-            #can't find a movie
-            if len(curMovies) == 0:
-                response = "Please name a movie!"
+        #can't find a movie
+        if len(movies) == 0:
+            response = "Please name a movie!"
+            return response
 
-            #More than one listed movie, this could be edited for style
-            elif len(curMovies) > 1:
+        #More than one listed movie, this could be edited for style
+        if len(movies) > 1:
      
-                #Hold sentiment
-                if self.extract_sentiment(line)> 0:
-                    sentiment = "liked "
-                else:
-                    sentiment = "didn't like "
+            #Hold sentiment
+            if self.extract_sentiment(line)> 0:
+                sentiment = "liked "
+            else:
+                sentiment = "didn't like "
 
                 #Echoing ratings
-                for m in curMovies:
-                    #if curMovies.index(m) == 0:
-                        #response += "Y"
-                    #else:
-                        #response += "y"
-                    response += "You " + sentiment + m +". "
+            for m in curMovies[0]:
+                response += "You " + sentiment + m +". "
 
             #one movie
+        else:
+            #Must disambiguate
+            if len(curMovies[0]) > 1:
+                response = "I have a couple movies with that name! Could you clarify?: "
+                for i in curMovies[0]:
+                    response += self.titles[i][0] + ", "
+                return response
+
+            #if clarified, call disambiguate
+
+            #If not ambiguous
+            print (curMovies)
+            cur = self.titles[curMovies[0][0]]    
+            movie = cur[0]
+            if self.extract_sentiment(line)> 0:
+                response = "Yeah, " + movie + " is a great film!"
             else:
-                movie = curMovies[0]
-                if self.extract_sentiment(line)> 0:
-                    response = "Yeah, " + movie + " is a great film!"
-                else:
-                    response = "I'm sorry you didn't enjoy " + movie + "."
-            if len(self.userSentiments) > 5:
-                response += " You've named enough movies for a recommendation, would you like one?"
-            else:
-                response += " Keep rating movies for a recommendation!"
+                response = "I'm sorry you didn't enjoy " + movie + "."
+        if len(self.userSentiments) > 5:
+            response += " You've named enough movies for a recommendation, would you like one?"
+        else:
+            response += " Keep rating movies for a recommendation!"
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -435,11 +443,14 @@ class Chatbot:
         @ Julia
         """
         newCandidates = []
+        clarification = clarification.lower()
         for i in candidates:
-            if re.search(clarification, self.titles[i][0]): 
-                newCandidates.append(i)
-            elif re.search(clarification, self.titles[i][1]):
-                newCandidates.append(i)  
+            inputs = clarification.split()
+            for c in inputs:
+                if re.search(c, self.titles[i][0].lower()): 
+                    newCandidates.append(i)
+                elif re.search(c, self.titles[i][1].lower()):
+                    newCandidates.append(i)  
         return newCandidates
 
     #############################################################################
@@ -546,7 +557,6 @@ class Chatbot:
         # TODO: Implement a recommendation function that takes a vector user_ratings          #
         # and matrix ratings_matrix and outputs a list of movies recommended by the chatbot.  #
         # Do not use the self.ratings matrix directly in this function.                       #
-        #                                                                                     #
         # For starter mode, you should use item-item collaborative filtering                  #
         # with cosine similarity, no mean-centering, and no normalization of scores.          #
         #######################################################################################
@@ -555,6 +565,7 @@ class Chatbot:
         recommendations = [0] * k
         rated = []
         predicted = {}
+        """
         #For all movies, if it wasn't user-rated, calculate and keep score
         for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
             if value == 0: #movie not in user_ratings:
@@ -562,6 +573,19 @@ class Chatbot:
                 for ranked in user_ratings:
                     score += user_ratings[ranked] * self.similarity(ratings_matrix[ranked], ratings_matrix[index])
                 predicted[index] = score
+        top = {}
+        for i, val in enumerate(predicted):
+            top[i] = val
+        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+        """
+
+        for i in range(len(user_ratings)):
+            if user_ratings[i] == 0:
+                score = 0
+                for ranked in user_ratings:
+                    if user_ratings[i] != 0:
+                        score += self.similarity(ratings_matrix[i], ratings_matrix[ranked]) * user_ratings[ranked]
+                predicted[i] = score
         top = {}
         for i, val in enumerate(predicted):
             top[i] = val
