@@ -5,6 +5,7 @@
 import movielens
 
 import numpy as np
+from PorterStemmer import PorterStemmer
 
 
 # noinspection PyMethodMayBeStatic
@@ -26,6 +27,8 @@ class Chatbot:
         self.title_names = [i[0].lower() for i in self.titles]
 
         self.userSentiments = {}
+
+        self.p = PorterStemmer()
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
@@ -120,20 +123,20 @@ class Chatbot:
                 if self.extract_sentiment(line)> 0:
                     sentiment = "liked "
                 else:
-                    sentiment = "didn't like " 
+                    sentiment = "didn't like "
 
                 for m in curMovies:
                     #if curMovies.index(m) == 0:
                         #response += "Y"
                     #else:
                         #response += "y"
-                    response += "You " + sentiment + m +". "        
+                    response += "You " + sentiment + m +". "
             else:
                 movie = curMovies[0]
                 if self.extract_sentiment(line)> 0:
                     response = "Yeah, " + movie + " is a great film!"
                 else:
-                    response = "I'm sorry you didn't enjoy " + movie + "." 
+                    response = "I'm sorry you didn't enjoy " + movie + "."
             if len(self.userSentiments) > 5:
                 response += " You've named enough movies for a recommendation, would you like one?"
             else:
@@ -202,13 +205,30 @@ class Chatbot:
         @Ella
         """
         titles = []
-        start = preprocessed_input.find("\"")
-        while start != -1:
-            end = preprocessed_input.find("\"", start+1)
-            title = preprocessed_input[start+1:end]
-            titles.append(str(title))
-            start = preprocessed_input.find("\"", end+1)
 
+        if (preprocessed_input.find("\"") != -1): 
+
+            # if the doc contains quotations
+            start = preprocessed_input.find("\"")
+            while start != -1:
+                end = preprocessed_input.find("\"", start+1)
+                title = preprocessed_input[start+1:end]
+                titles.append(str(title))
+                start = preprocessed_input.find("\"", end+1)
+
+        else : 
+            # if doc does not contain quotations
+            feelingwords  = ["think", "thought", "felt that", "enjoy", "enjoyed", "like", "hate", "hated"]
+            endwords = ["was", "is", "has", "\.", "\!", "\,"]
+            for word in feelingwords: 
+                firstletter = preprocessed_input.find(word)
+                if firstletter != -1: 
+                    start = firstletter + len(word)
+                    for endW in endwords :
+                        end = preprocessed_input.find(endW)
+                        if end != -1: 
+                            title = preprocessed_input[start+1: end-1]
+                            titles.append(str(title.lower())) 
         return titles
 
     def find_movies_by_title(self, title):
@@ -229,7 +249,9 @@ class Chatbot:
 
         @Kayla Ella
         """
-        #title = self.remove_articles(title)
+
+        title = self.remove_articles(title)
+
         # return [i for i in self.title_names if i.find(title) != -1]
         alternate = self.move_start_article(title)
         return [indx for indx, i in enumerate(self.title_names) if (i.find(title) != -1 or i.find(alternate, 0) != -1)]
@@ -270,37 +292,32 @@ class Chatbot:
         sentiment = 0
 
         #TODO: split words and remove movie titles
-        titles = self.extract_titles(preprocessed_input)
-        # print(titles)
-        for t in titles:
-            preprocessed_input = preprocessed_input.replace(t, '')
+        # titles = self.extract_titles(preprocessed_input)
+        # # print(titles)
+        # for t in titles:
+        #     preprocessed_input = preprocessed_input.replace(t, '')
         # print("STRING", preprocessed_input)
         # print(self.sentiment.keys())
-        negate = 1
         for w in preprocessed_input.split():
             # print("HI", w, w in self.sentiment)
+            # if preprocessed_input = " but not ":
+            #     print("WORD", w, self.p.stem(w, 0, len(w)-1))
+            if w not in self.sentiment:
+                w = self.p.stem(w, 0, len(w)-1)
             if w in self.sentiment:
                 senti = self.sentiment[w]
                 if senti == 'pos':
-                    sentiment += negate*1
+                    sentiment += 1
                 elif senti == 'neg':
-                    sentiment += negate*-1
+                    sentiment += -1
                 # print("HI", w, self.sentiment[w])
-                negate = 1
-            elif w == 'not' or w.find('n\'t') != -1:
-                negate = -1
 
             #TODO
         # print("HELLO",sentiment)
+        if sentiment == 0 and negate == -1: return -1
         if sentiment == 0: return 0
-        if sentiment < 0:
-            sentiment = -1
-        else:
-            sentiment = 1
-        for t in titles:
-            print(self.userSentiments)
-            self.userSentiments[t] = sentiment
-        return sentiment
+        return -1 if sentiment < 0 else 1
+
 
     def extract_sentiment_for_movies(self, preprocessed_input):
         """Creative Feature: Extracts the sentiments from a line of pre-processed text
@@ -321,7 +338,24 @@ class Chatbot:
 
         @ Ella
         """
-        pass
+
+
+        extracted = []
+        titles = self.extract_titles(preprocessed_input)
+        input = preprocessed_input
+        prev_senti = 0
+        for t in titles:
+            end = input.find(t)
+            sentiment = self.extract_sentiment(input[:end])
+
+            if sentiment == 0 and len(input[:end].replace(' ', '').split()) == 1:
+                # print("HEY", prev_senti)
+                sentiment = prev_senti
+            input = input[end + len(t):]
+            # print(input)
+            extracted.append((t, sentiment))
+            prev_senti = sentiment
+        return extracted
 
     def find_movies_closest_to_title(self, title, max_distance=3):
         """Creative Feature: Given a potentially misspelled movie title,
@@ -356,7 +390,7 @@ class Chatbot:
                         max_distance = dist
                     movies.append(index)
         return movies
-    
+
     def get_edit_distance(self, word1, word2):
         """helper method for find_movies_closest_to_title"""
         distances = np.zeros((len(word1) + 1, len(word2) + 1))
@@ -514,8 +548,7 @@ class Chatbot:
         # Populate this list with k movie indices to recommend to the user.
         recommendations = [0] * k
         rated = []
-        predicted = {}        
-
+        predicted = {}
         #For all movies, if it wasn't user-rated, calculate and keep score
         for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
             if value == 0: #movie not in user_ratings:
@@ -530,7 +563,7 @@ class Chatbot:
 
         #add sorted top k to recommendations
         for i in range(k):
-            recommendations[i] = top[i][1] 
+            recommendations[i] = top[i][1]
         for i in range(k//2):
             temp = recommendations[i]
             recommendations[i] = recommendations[k-1-i]
@@ -564,8 +597,8 @@ class Chatbot:
         """
         return """
         Your task is to implement the chatbot as detailed in the PA6 instructions.
-        Remember: in the starter mode, movie names will come in quotation marks and
-        expressions of sentiment will be simple!
+        Remember: in thee starter mode, movie names will come in quotation marks and
+        expressions of sentimnt will be simple!
         Write here the description for your own chatbot!
         """
 
