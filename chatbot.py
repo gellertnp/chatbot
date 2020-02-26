@@ -24,6 +24,8 @@ class Chatbot:
         self.sentiment = movielens.sentiment()
 
         self.title_names = [i[0] for i in self.titles]
+        
+        user_pref = {}
 
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
@@ -103,6 +105,9 @@ class Chatbot:
         # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
+        indeces = self.find_movies_by_title(self.extract_titles(input)[0])
+        if len(indeces) > 0:
+            return "i found" + self.title_names[indeces[0]]
 
         if self.creative:
             response = "I processed {} in creative mode!!".format(line)
@@ -199,8 +204,18 @@ class Chatbot:
         """
         title = self.remove_articles(title)
         # return [i for i in self.title_names if i.find(title) != -1]
-        return [indx for indx, i in enumerate(self.title_names) if i.find(title) != -1]
-
+        alternate = self.move_start_article(title)
+        return [indx for indx, i in enumerate(self.title_names) if (i.find(title) != -1 or i.find(alternate) != -1)]
+    
+    def move_start_article(self, line):
+        articles = ['an', 'a', 'the', 'le', 'la', 'les', 'los', 'las', 'el', 'die', 'der', 'das', 'un', 'une', 'des', 'una', 'uno', 'il', 'gle', 'ein', 'eine']
+        for a in articles:
+            i = line.lower().find(a + ' ')
+            if i == -0:
+                processed = line[i + len(a) + 1:].capitalize() + ' , ' + line[:i+len(a)]
+                print(processed)
+                return line[i + 1:] + ' , ' + line[:i+1]
+        return line
 
     def extract_sentiment(self, preprocessed_input):
         """Extract a sentiment rating from a line of pre-processed text.
