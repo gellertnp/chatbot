@@ -110,10 +110,11 @@ class Chatbot:
         input = self.preprocess(line)
 
         response = ""
-        if self.creative:
-            response = "I processed {} in creative mode!!".format(line)
-        else:
+        if True:
             curMovies = self.extract_titles(line)
+            for m in curMovies:
+                if self.find_movies_by_title(m) == []:
+                    curMovies.remove(m)
 
             #can't find a movie
             if len(curMovies) == 0:
@@ -123,26 +124,26 @@ class Chatbot:
             elif len(curMovies) > 1:
      
                 #Hold sentiment
-                if self.extract_sentiment(line)> 0:
-                    sentiment = "liked "
-                else:
-                    sentiment = "didn't like "
-
+                sentiments = self.extract_sentiment_for_movies(line)
+                
                 #Echoing ratings
-                for m in curMovies:
-                    #if curMovies.index(m) == 0:
-                        #response += "Y"
-                    #else:
-                        #response += "y"
-                    response += "You " + sentiment + m +". "
+                for i in range(len(curMovies)):
+                    if sentiments[i][1] > 0:
+                        sentiment = "liked "
+                    else:
+                        sentiment = "didn't like "
+
+                    response += "You " + sentiment + curMovies[i] +". "
 
             #one movie
             else:
                 movie = curMovies[0]
                 if self.extract_sentiment(line)> 0:
                     response = "Yeah, " + movie + " is a great film!"
-                else:
+                elif self.extract_sentiment(line)< 0:
                     response = "I'm sorry you didn't enjoy " + movie + "."
+                else:
+                    response = "I'm sorry, I'm not quite sure how you felt about " + movie + "."
             if len(self.userSentiments) > 5:
                 response += " You've named enough movies for a recommendation, would you like one?"
             else:
@@ -435,6 +436,7 @@ class Chatbot:
         @ Julia
         """
         newCandidates = []
+        clarification = clarification.lower()
         for i in candidates:
             if re.search(clarification, self.titles[i][0]): 
                 newCandidates.append(i)
