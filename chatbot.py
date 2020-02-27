@@ -18,7 +18,9 @@ class Chatbot:
         self.name = 'Marseille the Shell'
 
         self.creative = creative
-
+        #holds indeces and sentiment
+        self.lastAmbiguous = ["", 0]
+        self.flags = {"LastSentiment": False, "LastMovie": []}
         # This matrix has the following shape: num_movies x num_users
         # The values stored in each row i and column j is the rating for
         # movie i by user j
@@ -105,53 +107,105 @@ class Chatbot:
         # TODO: Implement the extraction and transformation in this method,         #
         # possibly calling other functions. Although modular code is not graded,    #
         # it is highly recommended.                                                 #
-        # @Ella @Max
         #############################################################################
         input = self.preprocess(line)
-
         response = ""
-        if True:
-            curMovies = self.extract_titles(line)
-            for m in curMovies:
-                if self.find_movies_by_title(m) == []:
-                    curMovies.remove(m)
+        curMovies = []
+        sentiment = ""
+        #disambiguating responses
+        if self.lastAmbiguous[0] != "":
+            movies = [self.lastAmbiguous[0]]
+            curMovies.append(self.disambiguate(line, self.lastAmbiguous[0]))
+            sentiment = self.get_sentiment_words(self.lastAmbiguous[1])
+            self.lastAmbiguous = ["", 0]
+            
+        elif self.flags["LastSentiment"]:
+            movies = self.flags["LastMovie"]
+            curMovies = self.flags["LastMovie"]
+            self.flags["LastMovie"] = []
+            self.flags["LastSentiment"] = False
 
-            #can't find a movie
-            if len(curMovies) == 0:
-                response = "Please name a movie!"
+        else:
+            movies = self.extract_titles(input)
+            for m in movies:
+                curMovies.append(self.find_movies_by_title(m))
 
-            #More than one listed movie, this could be edited for style
-            elif len(curMovies) > 1:
-     
-                #Hold sentiment
-                sentiments = self.extract_sentiment_for_movies(line)
-                
-                #Echoing ratings
-                for i in range(len(curMovies)):
-                    if sentiments[i][1] > 0:
-                        sentiment = "liked "
-                    else:
-                        sentiment = "didn't like "
+        #can't find a movie
+        if len(movies) == 0:
+            response = "Please name a movie!"
+            return response
 
-                    response += "You " + sentiment + curMovies[i] +". "
+        #getting new sentiment
+        if sentiment == "":
+            sentiment = self.get_sentiment_words(self.extract_sentiment(line))
+
+
+        #More than one listed movie, this could be edited for style
+        if len(movies) > 1:
+            sentiment = self.extract_sentiment_for_movies(input)
+            self.lastAmbiguous = ["", 0]
+            for i in range(len(curMovies)):
+                if len(curMovies[i]) < 1:
+                    response += "I couldn't find any movies called " + movies[i] + "."
+                if len(curMovies[i]) > 1:
+                    response += self.list_ambiguity(curMovies[i], sentiment[i][1])
+                else:
+                    sentiments = self.get_sentiment_words(sentiment[i][1])
+                    movie = self.titles[curMovies[i][0]][0]
+                    response += "You " + sentiments + movie +". "
+                    if sentiments == " saw":
+                        self.flags["LastSentiment"] = True
+                        self.flags["LastMovie"].append(curMovies[i])
+                        response += "How did you feel about " + movie + "?"
 
             #one movie
+        else:
+            #Must disambiguate
+            if len(curMovies[0]) > 1:
+                return self.list_ambiguity(curMovies[0], self.extract_sentiment(line))
+
+            #if clarified, call disambiguate
+
+
+            #If not ambiguous
+            if len(curMovies[0]) < 1:
+                return "I couldn't find any movies called " + movies[0] + "."
+            self.lastAmbiguous = ["", 0]
+            cur = self.titles[curMovies[0][0]]    
+            movie = cur[0]
+            if sentiment == "liked ":
+                response = "Yeah, " + movie + " is a great film!"
+            elif sentiment == "saw ":
+                response = "Sorry, could you let me know how you felt about " + movie + "? "
+                self.flags["LastSentiment"] = True
+                self.flags["LastMovie"].append(curMovies[0])
             else:
-                movie = curMovies[0]
-                if self.extract_sentiment(line)> 0:
-                    response = "Yeah, " + movie + " is a great film!"
-                elif self.extract_sentiment(line)< 0:
-                    response = "I'm sorry you didn't enjoy " + movie + "."
-                else:
-                    response = "I'm sorry, I'm not quite sure how you felt about " + movie + "."
-            if len(self.userSentiments) > 5:
-                response += " You've named enough movies for a recommendation, would you like one?"
-            else:
-                response += " Keep rating movies for a recommendation!"
+                response = "I'm sorry you didn't enjoy " + movie + "."
+        if len(self.userSentiments) > 5:
+            response += " You've named enough movies for a recommendation, would you like one?"
+        else:
+            response += " Keep rating movies for a recommendation!"
+            
 
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
+        return response
+        
+    def get_sentiment_words(self, integer):
+        if integer> 0:
+            sentiment = "liked "
+        elif integer<0:
+            sentiment = "didn't like "
+        else:
+            sentiment = "saw "
+        return sentiment
+    
+    def list_ambiguity(self, potential_titles, sentiment):
+        response = "I have a couple movies with that name! Could you clarify?: "
+        self.lastAmbiguous = [potential_titles, sentiment]
+        for i in potential_titles:
+            response += self.titles[i][0] + ", "
         return response
 
     @staticmethod
@@ -438,10 +492,12 @@ class Chatbot:
         newCandidates = []
         clarification = clarification.lower()
         for i in candidates:
-            if re.search(clarification, self.titles[i][0]): 
-                newCandidates.append(i)
-            elif re.search(clarification, self.titles[i][1]):
-                newCandidates.append(i)  
+            inputs = clarification.split()
+            for c in inputs:
+                if re.search(c, self.titles[i][0].lower(), flags = re.IGNORECASE): 
+                    newCandidates.append(i)
+                elif re.search(c, self.titles[i][1].lower(), flags = re.IGNORECASE):
+                    newCandidates.append(i)
         return newCandidates
 
     #############################################################################
@@ -503,7 +559,7 @@ class Chatbot:
         #############################################################################
         numerator = np.dot(u,v)
         denominator = np.linalg.norm(u) * np.linalg.norm(v)
-        if denominator == np.nan:
+        if denominator == 0:
             return 0
         similarity = numerator/denominator
         #############################################################################
@@ -548,7 +604,6 @@ class Chatbot:
         # TODO: Implement a recommendation function that takes a vector user_ratings          #
         # and matrix ratings_matrix and outputs a list of movies recommended by the chatbot.  #
         # Do not use the self.ratings matrix directly in this function.                       #
-        #                                                                                     #
         # For starter mode, you should use item-item collaborative filtering                  #
         # with cosine similarity, no mean-centering, and no normalization of scores.          #
         #######################################################################################
@@ -557,25 +612,22 @@ class Chatbot:
         recommendations = [0] * k
         rated = []
         predicted = {}
-        #For all movies, if it wasn't user-rated, calculate and keep score
-        for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
-            if value == 0: #movie not in user_ratings:
-                score = 0
-                for ranked in user_ratings:
-                    score += user_ratings[ranked] * self.similarity(ratings_matrix[ranked], ratings_matrix[index])
-                predicted[index] = score
-        top = {}
-        for i, val in enumerate(predicted):
-            top[i] = val
-        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
 
-        #add sorted top k to recommendations
-        for i in range(k):
+        for m in range(len(user_ratings)):
+            if user_ratings[m] != 0:
+                rated.append(m)
+
+        for i in range(len(self.titles)):
+            rxi = 0.0
+            if i not in rated:
+                for j in rated:
+                    rxj = user_ratings[j]
+                    sij = self.similarity(self.ratings[i], self.ratings[j])
+                    rxi += rxj * sij
+                predicted[i] = rxi
+        top = sorted(((value, key) for (key, value) in predicted.items()), reverse = True)
+        for i in range (k):
             recommendations[i] = top[i][1]
-        for i in range(k//2):
-            temp = recommendations[i]
-            recommendations[i] = recommendations[k-1-i]
-            recommendations[k-1-i] = temp
 
         #############################################################################
         #                             END OF YOUR CODE                              #
