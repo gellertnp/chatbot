@@ -18,7 +18,8 @@ class Chatbot:
         self.name = 'Marseille the Shell'
 
         self.creative = creative
-
+        #holds indeces and sentiment
+        self.lastAmbiguous = ["", 0]
         # This matrix has the following shape: num_movies x num_users
         # The values stored in each row i and column j is the rating for
         # movie i by user j
@@ -107,29 +108,45 @@ class Chatbot:
         # it is highly recommended.                                                 #
         #############################################################################
         input = self.preprocess(line)
-
-        movies = self.extract_titles(line)
         response = ""
         curMovies = []
-        for m in movies:
-            curMovies.append(self.find_movies_by_title(m))
+        sentiment = ""
+        #disambiguating responses
+        if self.lastAmbiguous[0] != "":
+            movies = [self.lastAmbiguous[0]]
+            curMovies.append(self.disambiguate(line, self.lastAmbiguous[0]))
+            if self.lastAmbiguous[1] > 0:
+                sentiment = "liked "
+            elif self.lastAmbiguous[1] < 0:
+                sentiment = "didn't like "
+            else:
+                sentiment = "saw "
+            self.lastAmbiguous = ["", 0]
+
+        else:
+            movies = self.extract_titles(input)
+            for m in movies:
+                curMovies.append(self.find_movies_by_title(m))
 
         #can't find a movie
         if len(movies) == 0:
             response = "Please name a movie!"
             return response
 
-        #More than one listed movie, this could be edited for style
-        if len(movies) > 1:
-     
-            #Hold sentiment
+        #getting new sentiment
+        if sentiment == "":
             if self.extract_sentiment(line)> 0:
                 sentiment = "liked "
-            else:
+            elif self.extract_sentiment(line)<0:
                 sentiment = "didn't like "
+            else:
+                sentiment = "saw "
 
-                #Echoing ratings
-            for m in curMovies[0]:
+
+        #More than one listed movie, this could be edited for style
+        if len(movies) > 1:
+            self.lastAmbiguous = ["", 0]
+            for m in movies:
                 response += "You " + sentiment + m +". "
 
             #one movie
@@ -137,18 +154,22 @@ class Chatbot:
             #Must disambiguate
             if len(curMovies[0]) > 1:
                 response = "I have a couple movies with that name! Could you clarify?: "
+                self.lastAmbiguous = [curMovies[0], self.extract_sentiment(line)]
                 for i in curMovies[0]:
                     response += self.titles[i][0] + ", "
                 return response
 
             #if clarified, call disambiguate
 
+
             #If not ambiguous
-            print (curMovies)
+            self.lastAmbiguous = ["", 0]
             cur = self.titles[curMovies[0][0]]    
             movie = cur[0]
-            if self.extract_sentiment(line)> 0:
+            if sentiment == "liked ":
                 response = "Yeah, " + movie + " is a great film!"
+            elif sentiment == "saw ":
+                response = "Sorry, could you let me know how you felt about " + movie + "? "
             else:
                 response = "I'm sorry you didn't enjoy " + movie + "."
         if len(self.userSentiments) > 5:
@@ -447,10 +468,10 @@ class Chatbot:
         for i in candidates:
             inputs = clarification.split()
             for c in inputs:
-                if re.search(c, self.titles[i][0].lower()): 
+                if re.search(c, self.titles[i][0].lower(), flags = re.IGNORECASE): 
                     newCandidates.append(i)
-                elif re.search(c, self.titles[i][1].lower()):
-                    newCandidates.append(i)  
+                elif re.search(c, self.titles[i][1].lower(), flags = re.IGNORECASE):
+                    newCandidates.append(i)
         return newCandidates
 
     #############################################################################
@@ -512,7 +533,7 @@ class Chatbot:
         #############################################################################
         numerator = np.dot(u,v)
         denominator = np.linalg.norm(u) * np.linalg.norm(v)
-        if denominator == np.nan:
+        if denominator == 0:
             return 0
         similarity = numerator/denominator
         #############################################################################
@@ -565,39 +586,22 @@ class Chatbot:
         recommendations = [0] * k
         rated = []
         predicted = {}
-        """
-        #For all movies, if it wasn't user-rated, calculate and keep score
-        for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
-            if value == 0: #movie not in user_ratings:
-                score = 0
-                for ranked in user_ratings:
-                    score += user_ratings[ranked] * self.similarity(ratings_matrix[ranked], ratings_matrix[index])
-                predicted[index] = score
-        top = {}
-        for i, val in enumerate(predicted):
-            top[i] = val
-        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
-        """
 
-        for i in range(len(user_ratings)):
-            if user_ratings[i] == 0:
-                score = 0
-                for ranked in user_ratings:
-                    if user_ratings[i] != 0:
-                        score += self.similarity(ratings_matrix[i], ratings_matrix[ranked]) * user_ratings[ranked]
-                predicted[i] = score
-        top = {}
-        for i, val in enumerate(predicted):
-            top[i] = val
-        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+        for m in range(len(user_ratings)):
+            if user_ratings[m] != 0:
+                rated.append(m)
 
-        #add sorted top k to recommendations
-        for i in range(k):
+        for i in range(len(self.titles)):
+            rxi = 0.0
+            if i not in rated:
+                for j in rated:
+                    rxj = user_ratings[j]
+                    sij = self.similarity(self.ratings[i], self.ratings[j])
+                    rxi += rxj * sij
+                predicted[i] = rxi
+        top = sorted(((value, key) for (key, value) in predicted.items()), reverse = True)
+        for i in range (k):
             recommendations[i] = top[i][1]
-        for i in range(k//2):
-            temp = recommendations[i]
-            recommendations[i] = recommendations[k-1-i]
-            recommendations[k-1-i] = temp
 
         #############################################################################
         #                             END OF YOUR CODE                              #
