@@ -26,9 +26,9 @@ class Chatbot:
         # movie i by user j
         self.titles, ratings = movielens.ratings()
         self.sentiment = movielens.sentiment()
-
+        self.toRec = False #Whether a recommendation is ready
         self.title_names = [i[0].lower() for i in self.titles]
-
+        self.userRatings = [0] * len(self.titles)
         self.userSentiments = {}
 
         self.p = PorterStemmer()
@@ -109,7 +109,6 @@ class Chatbot:
         # it is highly recommended.                                                 #
         #############################################################################
 
-
         #movie = ""
         posMovieResp = ["I'm glad you liked %s.", "Yeah, %s is a great movie!",  "I liked %s too!", "%s is a great choice.", "%s is my mom's fav!", "I CRIED when I saw %s."]
         negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only one who didn't like %s...", "Oof, ok, I won't recommend movies like %s", "Good to know, but don't talk to my mom, she loved %s.", "%s goes on our no-show list, noted!"]
@@ -119,6 +118,19 @@ class Chatbot:
         neutMoviesResp = ["Sorry, could you let me know how you felt about %s", "I didn't catch that. How did you feel about %s", "Oops, I missed your reaction, how did you feel about %s", "Yikes, something's off! How did you feel about %s", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
 
         input = self.preprocess(line)
+        if self.toRec == True:
+            yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm"]
+            nos = ["no", "nope", "nah", "negative", "nuh uh", "noo", "naw", "mm mm"]
+            for y in yeses:
+                if y in input.lower():
+                    self.toRec = False
+                    curRecs = self.recommend(self.userRatings, self.ratings)
+                    return "How about " + self.titles[curRecs[0]] + "?"
+            for n in nos:
+                if n in input.lower():
+                    return "Ok, want to name another movie?"
+            return "Sorry, could you be a little clearer?"
+
         response = ""
         curMovies = []
         sentiment = ""
@@ -161,7 +173,7 @@ class Chatbot:
                     response += self.list_ambiguity(curMovies[i], sentiment[i][1])
                 else:
                     sentiments = self.get_sentiment_words(sentiment[i][1])
-                    movie = self.titles[curMovies[i][0]][0]
+                    movie = self.title_names[curMovies[i][0]][0]
                     response += "You " + sentiments + movie +". "
                     if sentiments == " saw":
                         self.flags["LastSentiment"] = True
@@ -181,6 +193,7 @@ class Chatbot:
             if len(curMovies[0]) < 1:
                 return "I couldn't find any movies called " + movies[0] + "."
             self.lastAmbiguous = ["", 0]
+            self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
             cur = self.titles[curMovies[0][0]]    
             movie = cur[0]
             if sentiment == "liked ":
@@ -192,6 +205,7 @@ class Chatbot:
             else:
                 response = np.random.choice(negMovieResp) % movie
         if len(self.userSentiments) > 5:
+            self.toRec = True
             response += np.random.choice(canRec)
         else:
             response += np.random.choice(cantRec)
