@@ -108,6 +108,16 @@ class Chatbot:
         # possibly calling other functions. Although modular code is not graded,    #
         # it is highly recommended.                                                 #
         #############################################################################
+
+
+        #movie = ""
+        posMovieResp = ["I'm glad you liked %s.", "Yeah, %s is a great movie!",  "I liked %s too!", "%s is a great choice.", "%s is my mom's fav!", "I CRIED when I saw %s."]
+        negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only one who didn't like %s...", "Oof, ok, I won't recommend movies like %s", "Good to know, but don't talk to my mom, she loved %s.", "%s goes on our no-show list, noted!"]
+        canRec = [" You've named enough movies for a recommendation, would you like one?", " Woo! Thanks for all the movie ratings, do you want a recommendation now?", " I like your style!! Can I recommend a new movie?", " You've got good taste! Want a recommendation?"]
+        cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you HATED?", " What about another movie you LOVED?"]
+        arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a movie, let's talk about that!", "I'd love to discuss movies, could you tell me about one you've seen?", "Let's talk about movies, please!", "I'd love to talk about that, but I'm paid to give you movie recommendations, could you name a movie please?"]
+        neutMoviesResp = ["Sorry, could you let me know how you felt about %s", "I didn't catch that. How did you feel about %s", "Oops, I missed your reaction, how did you feel about %s", "Yikes, something's off! How did you feel about %s", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
+
         input = self.preprocess(line)
         response = ""
         curMovies = []
@@ -132,7 +142,7 @@ class Chatbot:
 
         #can't find a movie
         if len(movies) == 0:
-            response = "Please name a movie!"
+            response = np.random.choice(arbitraryResp)
             return response
 
         #getting new sentiment
@@ -174,17 +184,17 @@ class Chatbot:
             cur = self.titles[curMovies[0][0]]    
             movie = cur[0]
             if sentiment == "liked ":
-                response = "Yeah, " + movie + " is a great film!"
+                response = np.random.choice(posMovieResp) % movie 
             elif sentiment == "saw ":
-                response = "Sorry, could you let me know how you felt about " + movie + "? "
+                response = np.random.choice(neutMoviesResp) %movie
                 self.flags["LastSentiment"] = True
                 self.flags["LastMovie"].append(curMovies[0])
             else:
-                response = "I'm sorry you didn't enjoy " + movie + "."
+                response = np.random.choice(negMovieResp) % movie
         if len(self.userSentiments) > 5:
-            response += " You've named enough movies for a recommendation, would you like one?"
+            response += np.random.choice(canRec)
         else:
-            response += " Keep rating movies for a recommendation!"
+            response += np.random.choice(cantRec)
             
 
         #############################################################################
@@ -491,6 +501,12 @@ class Chatbot:
         """
         newCandidates = []
         clarification = clarification.lower()
+
+        for i in candidates:
+            if clarification.lower() in self.titles[i][0].lower():
+                newCandidates.append(i) 
+
+        """
         for i in candidates:
             inputs = clarification.split()
             for c in inputs:
@@ -498,6 +514,7 @@ class Chatbot:
                     newCandidates.append(i)
                 elif re.search(c, self.titles[i][1].lower(), flags = re.IGNORECASE):
                     newCandidates.append(i)
+        """
         return newCandidates
 
     #############################################################################
