@@ -613,18 +613,18 @@ class Chatbot:
         rated = []
         predicted = {}
 
-        for m in range(len(user_ratings)):
-            if user_ratings[m] != 0:
-                rated.append(m)
+#        for m in range(len(user_ratings)):
+#            if user_ratings[m] != 0:
+#                rated.append(m)
 
-        for i in range(len(self.titles)):
+        for i in range(len(user_ratings)):
             rxi = 0.0
-            if i not in rated:
-                for j in rated:
-                    rxj = user_ratings[j]
-                    sij = self.similarity(self.ratings[i], self.ratings[j])
-                    rxi += rxj * sij
-                predicted[i] = rxi
+#            if i not in rated:
+            for j in range(len(user_ratings)):
+                rxj = user_ratings[j]
+                sij = self.similarity(ratings_matrix[j], ratings_matrix[i])
+                rxi += rxj * sij
+            predicted[i] = rxi
         top = sorted(((value, key) for (key, value) in predicted.items()), reverse = True)
         for i in range (k):
             recommendations[i] = top[i][1]
