@@ -116,10 +116,7 @@ class Chatbot:
         # possibly calling other functions. Although modular code is not graded,    #
         # it is highly recommended.                                                 #
         #############################################################################
-        
-        movie = ""
-
-
+        print (self.userSentiments)
         input = self.preprocess(line)
         if self.toRec == True:
 
