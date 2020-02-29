@@ -39,7 +39,7 @@ class Chatbot:
         self.userRatings = np.zeros(len(self.title_names))
         self.userSentiments = {}
 
-#        self.p = PorterStemmer()
+        self.p = PorterStemmer()
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
@@ -649,7 +649,7 @@ class Chatbot:
         for i in range(len(user_ratings)):
             rxi = 0.0
             if i not in rated:
-                for j in range(len(user_ratings)):
+                for j in rated:
                     rxj = user_ratings[j]
                     sij = self.similarity(ratings_matrix[j], ratings_matrix[i])
                     rxi += rxj * sij
