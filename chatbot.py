@@ -125,11 +125,11 @@ class Chatbot:
 
             for y in yeses:
                 if y in input.lower():
-                    self.toRec = False
                     curRecs = self.recommend(self.userRatings, self.ratings)
-                    return "How about " + self.titles[curRecs[0]] + "?"
+                    return "How about " + self.titles[curRecs[0]] + "? Want another recommendation?"
             for n in nos:
                 if n in input.lower():
+                    self.toRec = False
                     return "Ok, want to name another movie?"
             return "Sorry, could you be a little clearer?"
 
@@ -196,6 +196,7 @@ class Chatbot:
                 return "I couldn't find any movies called " + movies[0] + "."
             self.lastAmbiguous = ["", 0]
             self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
+            print (self.userRatings)
             movie = cur[0]
             if sentiment == "liked ":
                 response = np.random.choice(posMovieResp) % movie
@@ -382,7 +383,6 @@ class Chatbot:
         # print(self.sentiment.keys())
         negate = 1
         for w in preprocessed_input.split():
-            # print("HI", w, w in self.sentiment)
             # if preprocessed_input = " but not ":
             #     print("WORD", w, self.p.stem(w, 0, len(w)-1))
             if w not in self.sentiment:
@@ -393,13 +393,10 @@ class Chatbot:
                     sentiment += negate*1
                 elif senti == 'neg':
                     sentiment += negate*-1
-                # print("HI", w, self.sentiment[w])
                 negate = 1
             elif w == 'not' or w.find('n\'t') != -1:
                 negate = -1
 
-            #TODO
-        # print("HELLO",sentiment)
         if sentiment == 0 and negate == -1: return -1
         if sentiment == 0: return 0
         return -1 if sentiment < 0 else 1
@@ -516,20 +513,11 @@ class Chatbot:
         """
         newCandidates = []
         clarification = clarification.lower()
-
         for i in candidates:
-            if clarification.lower() in self.titles[i][0].lower():
+            if re.search(clarification, self.titles[i][0], flags = re.IGNORECASE):
                 newCandidates.append(i) 
-
-        """
-        for i in candidates:
-            inputs = clarification.split()
-            for c in inputs:
-                if re.search(c, self.titles[i][0].lower(), flags = re.IGNORECASE): 
-                    newCandidates.append(i)
-                elif re.search(c, self.titles[i][1].lower(), flags = re.IGNORECASE):
-                    newCandidates.append(i)
-        """
+        print(newCandidates)
+        
         return newCandidates
 
     #############################################################################
