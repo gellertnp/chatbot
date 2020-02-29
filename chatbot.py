@@ -8,6 +8,14 @@ import re
 import numpy as np
 from PorterStemmer import PorterStemmer
 
+posMovieResp = ["I'm glad you liked %s.", "Yeah, %s is a great movie!",  "I liked %s too!", "%s is a great choice.", "%s is my mom's fav!", "I CRIED when I saw %s."]
+negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only one who didn't like %s...", "Oof, ok, I won't recommend movies like %s", "Good to know, but don't talk to my mom, she loved %s.", "%s goes on our no-show list, noted!"]
+canRec = [" You've named enough movies for a recommendation, would you like one?", " Woo! Thanks for all the movie ratings, do you want a recommendation now?", " I like your style!! Can I recommend a new movie?", " You've got good taste! Want a recommendation?"]
+cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you HATED?", " What about another movie you LOVED?"]
+arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a movie, let's talk about that!", "I'd love to discuss movies, could you tell me about one you've seen?", "Let's talk about movies, please!", "I'd love to talk about that, but I'm paid to give you movie recommendations, could you name a movie please?"]
+neutMoviesResp = ["Sorry, could you let me know how you felt about %s", "I didn't catch that. How did you feel about %s", "Oops, I missed your reaction, how did you feel about %s", "Yikes, something's off! How did you feel about %s", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
+yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm"]
+nos = ["no", "nope", "nah", "negative", "nuh uh", "noo", "naw", "mm mm"]
 
 # noinspection PyMethodMayBeStatic
 class Chatbot:
@@ -28,10 +36,10 @@ class Chatbot:
         self.sentiment = movielens.sentiment()
         self.toRec = False #Whether a recommendation is ready
         self.title_names = [i[0].lower() for i in self.titles]
-        self.userRatings = [0] * len(self.titles)
+        self.userRatings = np.zeros(len(self.title_names))
         self.userSentiments = {}
 
-        self.p = PorterStemmer()
+#        self.p = PorterStemmer()
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
         # @ Max
@@ -110,17 +118,11 @@ class Chatbot:
         #############################################################################
         
         movie = ""
-        posMovieResp = ["I'm glad you liked %s.", "Yeah, %s is a great movie!",  "I liked %s too!", "%s is a great choice.", "%s is my mom's fav!", "I CRIED when I saw %s."]
-        negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only one who didn't like %s...", "Oof, ok, I won't recommend movies like %s", "Good to know, but don't talk to my mom, she loved %s.", "%s goes on our no-show list, noted!"]
-        canRec = [" You've named enough movies for a recommendation, would you like one?", " Woo! Thanks for all the movie ratings, do you want a recommendation now?", " I like your style!! Can I recommend a new movie?", " You've got good taste! Want a recommendation?"]
-        cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you HATED?", " What about another movie you LOVED?"]
-        arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a movie, let's talk about that!", "I'd love to discuss movies, could you tell me about one you've seen?", "Let's talk about movies, please!", "I'd love to talk about that, but I'm paid to give you movie recommendations, could you name a movie please?"]
-        neutMoviesResp = ["Sorry, could you let me know how you felt about %s", "I didn't catch that. How did you feel about %s", "Oops, I missed your reaction, how did you feel about %s", "Yikes, something's off! How did you feel about %s", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
+
 
         input = self.preprocess(line)
         if self.toRec == True:
-            yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm"]
-            nos = ["no", "nope", "nah", "negative", "nuh uh", "noo", "naw", "mm mm"]
+
             for y in yeses:
                 if y in input.lower():
                     self.toRec = False
@@ -559,11 +561,8 @@ class Chatbot:
         #############################################################################
 
         # The starter code returns a new matrix shaped like ratings but full of zeros.
-        binarized_ratings = np.copy(ratings)
-        binarized_ratings[binarized_ratings == threshold] = -1
-        binarized_ratings[np.nonzero(binarized_ratings)] -= threshold
-        binarized_ratings[binarized_ratings < 0] = -1
-        binarized_ratings[binarized_ratings > 0] = 1
+        binarized_ratings = np.where(ratings > 2.5, 1, -1)
+        binarized_ratings[np.where(ratings == 0)] = 0
 
 
         #############################################################################
