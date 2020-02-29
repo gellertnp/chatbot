@@ -118,6 +118,7 @@ class Chatbot:
         #############################################################################
         print (self.userSentiments)
         input = self.preprocess(line)
+<<<<<<< Updated upstream
         if self.toRec == True:
 
             for y in yeses:
@@ -178,11 +179,37 @@ class Chatbot:
                         self.flags["LastSentiment"] = True
                         self.flags["LastMovie"].append(curMovies[i])
                         response += "How did you feel about " + movie + "?"
+=======
+        movies = self.extract_titles(line)
+        response = ""
+        curMovies = []
+        for m in movies:
+            curMovies.append(self.find_movies_by_title(m))
+
+        #can't find a movie
+        if len(curMovies[0]) == 0:
+            response = "Please name a movie!"
+            return response
+
+        #More than one listed movie, this could be edited for style
+        if len(curMovies[0]) > 1:
+     
+            #Hold sentiment
+            if self.extract_sentiment(line)> 0:
+                sentiment = "liked "
+            else:
+                sentiment = "didn't like "
+
+                #Echoing ratings
+            for m in curMovies[0]:
+                response += "You " + sentiment + m +". "
+>>>>>>> Stashed changes
 
             #one movie
         else:
             #Must disambiguate
             if len(curMovies[0]) > 1:
+<<<<<<< Updated upstream
                 return self.list_ambiguity(curMovies[0], self.extract_sentiment(line))
 
             #if clarified, call disambiguate
@@ -209,6 +236,27 @@ class Chatbot:
         else:
             response += np.random.choice(cantRec)
 
+=======
+                response = "I have a couple movies with that name! Could you clarify?: "
+                for i in curMovies[0]:
+                    response += self.titles[i][0] + ", "
+                return response
+
+            #if clarified, call disambiguate
+
+            #If not ambiguous
+            print (curMovies)
+            cur = self.titles[curMovies[0][0]]    
+            movie = cur[0]
+            if self.extract_sentiment(line)> 0:
+                response = "Yeah, " + movie + " is a great film!"
+            else:
+                response = "I'm sorry you didn't enjoy " + movie + "."
+        if len(self.userSentiments) > 5:
+            response += " You've named enough movies for a recommendation, would you like one?"
+        else:
+            response += " Keep rating movies for a recommendation!"
+>>>>>>> Stashed changes
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -511,10 +559,19 @@ class Chatbot:
         newCandidates = []
         clarification = clarification.lower()
         for i in candidates:
+<<<<<<< Updated upstream
             if re.search(clarification, self.titles[i][0], flags = re.IGNORECASE):
                 newCandidates.append(i) 
         print(newCandidates)
         
+=======
+            inputs = clarification.split()
+            for c in inputs:
+                if re.search(c, self.titles[i][0].lower()): 
+                    newCandidates.append(i)
+                elif re.search(c, self.titles[i][1].lower()):
+                    newCandidates.append(i)  
+>>>>>>> Stashed changes
         return newCandidates
 
     #############################################################################
@@ -626,6 +683,7 @@ class Chatbot:
         recommendations = [0] * k
         rated = []
         predicted = {}
+<<<<<<< Updated upstream
 
         for m in range(len(user_ratings)):
             if user_ratings[m] != 0:
@@ -641,6 +699,36 @@ class Chatbot:
                 predicted[i] = rxi
         top = sorted(((value, key) for (key, value) in predicted.items()), reverse = True)
         for i in range (k):
+=======
+        """
+        #For all movies, if it wasn't user-rated, calculate and keep score
+        for index, value in enumerate(user_ratings): #movie in range(len(self.titles)):
+            if value == 0: #movie not in user_ratings:
+                score = 0
+                for ranked in user_ratings:
+                    score += user_ratings[ranked] * self.similarity(ratings_matrix[ranked], ratings_matrix[index])
+                predicted[index] = score
+        top = {}
+        for i, val in enumerate(predicted):
+            top[i] = val
+        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+        """
+
+        for i in range(len(user_ratings)):
+            if user_ratings[i] == 0:
+                score = 0
+                for ranked in user_ratings:
+                    if user_ratings[i] != 0:
+                        score += self.similarity(ratings_matrix[i], ratings_matrix[ranked]) * user_ratings[ranked]
+                predicted[i] = score
+        top = {}
+        for i, val in enumerate(predicted):
+            top[i] = val
+        top = sorted(((value, key) for (key, value) in top.items()), reverse = True)
+
+        #add sorted top k to recommendations
+        for i in range(k):
+>>>>>>> Stashed changes
             recommendations[i] = top[i][1]
 
         #############################################################################
