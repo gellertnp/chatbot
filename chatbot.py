@@ -116,10 +116,9 @@ class Chatbot:
         # possibly calling other functions. Although modular code is not graded,    #
         # it is highly recommended.                                                 #
         #############################################################################
-        print (self.userSentiments)
         input = self.preprocess(line)
-        if self.toRec == True:
 
+        if self.toRec == True:
             for y in yeses:
                 if y in input.lower():
                     curRecs = self.recommend(self.userRatings, self.ratings)
@@ -133,6 +132,9 @@ class Chatbot:
         response = ""
         curMovies = []
         sentiment = ""
+
+
+#<<<<<<< Updated upstream
         #disambiguating responses
         if self.lastAmbiguous[0] != "":
             movies = [self.lastAmbiguous[0]]
@@ -153,7 +155,7 @@ class Chatbot:
 
         #can't find a movie
         if len(movies) == 0:
-            response = np.random.choice(arbitraryResp)
+            return np.random.choice(arbitraryResp)
 
         #getting new sentiment
         if sentiment == "":
@@ -172,28 +174,26 @@ class Chatbot:
                 else:
                     sentiments = self.get_sentiment_words(sentiment[i][1])
                     movie = self.titles[curMovies[i][0]][0]
-#                    movie = self.title_names[curMovies[i][0]][0]
                     response += "You " + sentiments + movie +". "
                     if sentiments == " saw":
                         self.flags["LastSentiment"] = True
                         self.flags["LastMovie"].append(curMovies[i])
                         response += "How did you feel about " + movie + "?"
-
-            #one movie
         else:
             #Must disambiguate
             if len(curMovies[0]) > 1:
-                return self.list_ambiguity(curMovies[0], self.extract_sentiment(line))
-
-            #if clarified, call disambiguate
+            #put in top stickie here delete til next comment
+                response = "I have a couple movies with that name! Could you clarify?: "
+                for i in curMovies[0]:
+                    response += self.titles[i][0] + ", "
+                self.lastAmbiguous = [curMovies[0], self.extract_sentiment(line)]
+                return response
 
 
             #If not ambiguous
-            if len(curMovies[0]) < 1:
-                return "I couldn't find any movies called " + movies[0] + "."
-            self.lastAmbiguous = ["", 0]
-            self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
-            print (self.userRatings)
+            cur = self.titles[curMovies[0][0]]    
+            #>>>>>>> Stashed changes
+
             movie = cur[0]
             if sentiment == "liked ":
                 response = np.random.choice(posMovieResp) % movie
@@ -209,16 +209,15 @@ class Chatbot:
         else:
             response += np.random.choice(cantRec)
 
-
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
         return response
 
     def get_sentiment_words(self, integer):
-        if integer> 0:
+        if integer > 0:
             sentiment = "liked "
-        elif integer<0:
+        elif integer < 0:
             sentiment = "didn't like "
         else:
             sentiment = "saw "
@@ -511,10 +510,10 @@ class Chatbot:
         newCandidates = []
         clarification = clarification.lower()
         for i in candidates:
-            if re.search(clarification, self.titles[i][0], flags = re.IGNORECASE):
+            title = self.titles[i][0]
+            
+            if re.search(" "+clarification+" ", self.titles[i][0], flags = re.IGNORECASE):
                 newCandidates.append(i) 
-        print(newCandidates)
-        
         return newCandidates
 
     #############################################################################
