@@ -157,12 +157,12 @@ class Chatbot:
         if len(movies) == 0:
             return np.random.choice(arbitraryResp)
 
+
         #getting new sentiment
         if sentiment == "":
             sentiment = self.get_sentiment_words(self.extract_sentiment(line))
 
 
-        #More than one listed movie, this could be edited for style
         if len(movies) > 1:
             sentiment = self.extract_sentiment_for_movies(input)
             self.lastAmbiguous = ["", 0]
@@ -180,20 +180,16 @@ class Chatbot:
                         self.flags["LastMovie"].append(curMovies[i])
                         response += "How did you feel about " + movie + "?"
         else:
-            #Must disambiguate
             if len(curMovies[0]) > 1:
-            #put in top stickie here delete til next comment
                 response = "I have a couple movies with that name! Could you clarify?: "
                 for i in curMovies[0]:
                     response += self.titles[i][0] + ", "
                 self.lastAmbiguous = [curMovies[0], self.extract_sentiment(line)]
                 return response
+            if len(curMovies[0]) == 0:
+                return "I couldn't find any movies called " + movies[0] + "."
 
-
-            #If not ambiguous
             cur = self.titles[curMovies[0][0]]    
-            #>>>>>>> Stashed changes
-
             movie = cur[0]
             if sentiment == "liked ":
                 response = np.random.choice(posMovieResp) % movie
@@ -508,11 +504,12 @@ class Chatbot:
         @ Julia
         """
         newCandidates = []
-        clarification = clarification.lower()
+        c = clarification.lower()
         for i in candidates:
             title = self.titles[i][0]
-            
-            if re.search(" "+clarification+" ", self.titles[i][0], flags = re.IGNORECASE):
+            word = " "+c+" "
+            year = "\("+c+"\)"
+            if re.search(word, self.titles[i][0], flags = re.IGNORECASE) or re.search(year, self.titles[i][0]):
                 newCandidates.append(i) 
         return newCandidates
 
