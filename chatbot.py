@@ -7,7 +7,9 @@ import movielens
 import re
 import numpy as np
 from PorterStemmer import PorterStemmer
-
+import pygtrie
+import string
+import re
 posMovieResp = ["I'm glad you liked %s.", "Yeah, %s is a great movie!",  "I liked %s too!", "%s is a great choice.", "%s is my mom's fav!", "I CRIED when I saw %s."]
 negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only one who didn't like %s...", "Oof, ok, I won't recommend movies like %s", "Good to know, but don't talk to my mom, she loved %s.", "%s goes on our no-show list, noted!"]
 canRec = [" You've named enough movies for a recommendation, would you like one?", " Woo! Thanks for all the movie ratings, do you want a recommendation now?", " I like your style!! Can I recommend a new movie?", " You've got good taste! Want a recommendation?"]
@@ -35,9 +37,12 @@ class Chatbot:
         self.titles, ratings = movielens.ratings()
         self.sentiment = movielens.sentiment()
         self.toRec = False #Whether a recommendation is ready
-        self.title_names = [i[0].lower() for i in self.titles]
+        self.title_names = [i[0].lower().translate(str.maketrans('', '', string.punctuation)) for i in self.titles]
         self.userRatings = np.zeros(len(self.title_names))
         self.userSentiments = {}
+
+        self.createTrie(self.title_names)
+        print("HELLO")
 
         self.p = PorterStemmer()
         #############################################################################
@@ -51,6 +56,32 @@ class Chatbot:
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
+    def createTrie(self, titles):
+        articles = ["a", " an", "the"]
+        self.t = pygtrie.StringTrie()
+        for film in titles:
+            film = self.move_start_article(film).lower()
+
+            # print("FILM",film)
+            t = film.split()
+            s = ""
+            keys = []
+            for w in t:
+                w  = w.translate(str.maketrans('', '', string.punctuation))
+                dig = re.findall(r"\b\d{4}\b", w)
+                if w in dig:
+                    keys.append(s )
+                elif w in articles:
+                    keys.append(s )
+                s += w + "/"
+
+            for s in keys:
+                if s == "":
+                    continue
+                if s[len(s)-1] == '/':
+                    s = s[:-1]
+                self.t[s] = film
+
 
     #############################################################################
     # 1. WARM UP REPL                                                           #
@@ -134,14 +165,13 @@ class Chatbot:
         sentiment = ""
 
 
-#<<<<<<< Updated upstream
         #disambiguating responses
         if self.lastAmbiguous[0] != "":
             movies = [self.lastAmbiguous[0]]
             curMovies.append(self.disambiguate(line, self.lastAmbiguous[0]))
             sentiment = self.get_sentiment_words(self.lastAmbiguous[1])
             self.lastAmbiguous = ["", 0]
-            
+
         elif self.flags["LastSentiment"]:
             movies = self.flags["LastMovie"]
             curMovies = self.flags["LastMovie"]
@@ -191,8 +221,7 @@ class Chatbot:
 
 
             #If not ambiguous
-            cur = self.titles[curMovies[0][0]]    
-            #>>>>>>> Stashed changes
+            cur = self.titles[curMovies[0][0]]
 
             movie = cur[0]
             if sentiment == "liked ":
@@ -296,6 +325,7 @@ class Chatbot:
                 start = preprocessed_input.find("\"", end+1)
 
         else :
+
             # if doc does not contain quotations
             feelingwords  = ["think", "thought", "felt that", "enjoy", "enjoyed", "like", "hate", "hated"]
             endwords = ["was", "is", "has", "\.", "\!", "\,"]
@@ -308,7 +338,28 @@ class Chatbot:
                         if end != -1:
                             title = preprocessed_input[start+1: end-1]
                             titles.append(str(title.lower()))
+
+        s = self.convert_input(preprocessed_input)
+
+        while s.find("/") != -1:
+            films = list(self.t.prefixes(s))
+
+            if len(films):
+                for m in films:
+                    # print("MOVIE", m[1])
+                    titles.append(m[1])
+            s = s[s.find("/")+1:]
+            # print(s, films)
+
         return titles
+
+    def convert_input(self, input):
+        t = input.split()
+        s = ""
+        for w in t:
+            w = w.replace(" ","")
+            s += w + "/"
+        return s
 
     def find_movies_by_title(self, title):
         """ Given a movie title, return a list of indices of matching movies.
@@ -331,10 +382,10 @@ class Chatbot:
 
 
         # return [i for i in self.title_names if i.find(title) != -1]
-        title = title.lower()
-        alternate = self.move_start_article(title)
+        title = title.lower().translate(str.maketrans('', '', string.punctuation))
+        alternate = self.move_start_article(title).translate(str.maketrans('', '', string.punctuation))
         return [indx for indx, i in enumerate(self.title_names) if (i.find(title,0) != -1 or i.find(alternate, 0) != -1)]
-    
+
     def move_start_article(self, line):
         articles = ['an', 'a', 'the', 'le', 'la', 'les', 'los', 'las', 'el', 'die', 'der', 'das', 'un', 'une', 'des', 'una', 'uno', 'il', 'gle', 'ein', 'eine']
         for a in articles:
@@ -366,7 +417,7 @@ class Chatbot:
 
         @Ella
         """
-        
+
       # TODO: add -2/2 weighting, NEGATIONS
         sentiment = 0
 
@@ -511,9 +562,9 @@ class Chatbot:
         clarification = clarification.lower()
         for i in candidates:
             title = self.titles[i][0]
-            
+
             if re.search(" "+clarification+" ", self.titles[i][0], flags = re.IGNORECASE):
-                newCandidates.append(i) 
+                newCandidates.append(i)
         return newCandidates
 
     #############################################################################
