@@ -13,7 +13,7 @@ negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only o
 canRec = [" You've named enough movies for a recommendation, would you like one?", " Woo! Thanks for all the movie ratings, do you want a recommendation now?", " I like your style!! Can I recommend a new movie?", " You've got good taste! Want a recommendation?"]
 cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you HATED?", " What about another movie you LOVED?"]
 arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a movie, let's talk about that!", "I'd love to discuss movies, could you tell me about one you've seen?", "Let's talk about movies, please!", "I'd love to talk about that, but I'm paid to give you movie recommendations, could you name a movie please?"]
-neutMoviesResp = ["Sorry, could you let me know how you felt about %s", "I didn't catch that. How did you feel about %s", "Oops, I missed your reaction, how did you feel about %s", "Yikes, something's off! How did you feel about %s", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
+neutMoviesResp = ["Sorry, could you let me know how you felt about %s?", "I didn't catch that. How did you feel about %s?", "Oops, I missed your reaction, how did you feel about %s?", "Yikes, something's off! How did you feel about %s?", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
 yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm"]
 nos = ["no", "nope", "nah", "negative", "nuh uh", "noo", "naw", "mm mm"]
 
@@ -28,7 +28,7 @@ class Chatbot:
         self.creative = creative
         #holds indeces and sentiment
         self.lastAmbiguous = ["", 0]
-        self.flags = {"LastSentiment": False, "LastMovie": []}
+        self.flags = {"LastSentiment": False, "LastMovie": [], "LastMovieTitle": []}
         # This matrix has the following shape: num_movies x num_users
         # The values stored in each row i and column j is the rating for
         # movie i by user j
@@ -122,7 +122,6 @@ class Chatbot:
 
         input = self.preprocess(line)
         if self.toRec == True:
-
             for y in yeses:
                 if y in input.lower():
                     self.toRec = False
@@ -144,10 +143,11 @@ class Chatbot:
             self.lastAmbiguous = ["", 0]
             
         elif self.flags["LastSentiment"]:
-            movies = self.flags["LastMovie"]
+            movies = self.flags["LastMovieTitle"]
             curMovies = self.flags["LastMovie"]
             self.flags["LastMovie"] = []
             self.flags["LastSentiment"] = False
+            self.flags["LastMovieTitle"] = []
 
         else:
             movies = self.extract_titles(input)
@@ -156,7 +156,7 @@ class Chatbot:
 
         #can't find a movie
         if len(movies) == 0:
-            response = np.random.choice(arbitraryResp)
+            return np.random.choice(arbitraryResp)
 
         #getting new sentiment
         if sentiment == "":
@@ -180,6 +180,7 @@ class Chatbot:
                     if sentiments == " saw":
                         self.flags["LastSentiment"] = True
                         self.flags["LastMovie"].append(curMovies[i])
+                        self.flags["LastMovieTitle"].append(movies[i])
                         response += "How did you feel about " + movie + "?"
 
             #one movie
@@ -196,13 +197,14 @@ class Chatbot:
                 return "I couldn't find any movies called " + movies[0] + "."
             self.lastAmbiguous = ["", 0]
             self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
-            movie = cur[0]
+            movie = movies[0]
             if sentiment == "liked ":
                 response = np.random.choice(posMovieResp) % movie
             elif sentiment == "saw ":
                 response = np.random.choice(neutMoviesResp) %movie
                 self.flags["LastSentiment"] = True
                 self.flags["LastMovie"].append(curMovies[0])
+                self.flags["LastMovieTitle"].append(movies[0])
             else:
                 response = np.random.choice(negMovieResp) % movie
         if len(self.userSentiments) > 5:
