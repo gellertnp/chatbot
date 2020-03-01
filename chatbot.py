@@ -510,8 +510,8 @@ class Chatbot:
         movies = []
         title = title.lower()
         length = len(title)
-        for candidate in self.title_names:
-            index = self.title_names.index(candidate)
+        for index in range (len(self.titles)):
+            candidate = self.titles[index][0].lower()
             candidate = candidate[:candidate.find(' (')]
             if np.absolute(len(candidate) - length) <= max_distance:
                 dist = self.get_edit_distance(candidate, title)
