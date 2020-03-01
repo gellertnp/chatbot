@@ -17,6 +17,7 @@ arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a mov
 neutMoviesResp = ["Sorry, could you let me know how you felt about %s?", "I didn't catch that. How did you feel about %s?", "Oops, I missed your reaction, how did you feel about %s?", "Yikes, something's off! How did you feel about %s?", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
 yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm"]
 nos = ["no", "nope", "nah", "negative", "nuh uh", "noo", "naw", "mm mm"]
+which = {"first": 0, "second": 1, "third": 2, "fourth": 3, "fifth": 4, "sixth": 5, "seventh": 6, "eight": 7, "ninth": 8, "tenth": 9}
 
 # noinspection PyMethodMayBeStatic
 class Chatbot:
@@ -39,7 +40,8 @@ class Chatbot:
         self.title_names = [i[0].lower().translate(str.maketrans('', '', string.punctuation)) for i in self.titles]
         self.userRatings = np.zeros(len(self.title_names))
         self.userSentiments = {}
-
+        self.tilRec = 0
+        self.recCount = 0
         self.createTrie(self.title_names)
         print("HELLO")
 
@@ -151,9 +153,12 @@ class Chatbot:
             for y in yeses:
                 if y in input.lower():
                     curRecs = self.recommend(self.userRatings, self.ratings)
-                    return "How about " + self.titles[curRecs[0]] + "? Want another recommendation?"
+                    response = "How about " + self.titles[curRecs[0]][self.recCount] + "? Want another recommendation?"
+                    self.recCount+=1
+                    return response
             for n in nos:
                 if n in input.lower():
+                    self.recCount = 0
                     self.toRec = False
                     return "Ok, want to name another movie?"
             return "Sorry, could you be a little clearer?"
@@ -200,6 +205,7 @@ class Chatbot:
                 if len(curMovies[i]) > 1:
                     response += self.list_ambiguity(curMovies[i], sentiment[i][1])
                 else:
+                    self.tilRec+=1
                     sentiments = self.get_sentiment_words(sentiment[i][1])
                     movie = self.titles[curMovies[i][0]][0]
                     response += "You " + sentiments + movie +". "
@@ -223,6 +229,7 @@ class Chatbot:
 
             cur = self.titles[curMovies[0][0]]    
             movie = cur[0]
+            self.tilRec+=1
             if sentiment == "liked ":
                 response = np.random.choice(posMovieResp) % movie
             elif sentiment == "saw ":
@@ -232,7 +239,7 @@ class Chatbot:
                 self.flags["LastMovieTitle"].append(movies[0])
             else:
                 response = np.random.choice(negMovieResp) % movie
-        if len(self.userSentiments) > 5:
+        if self.tilRec >= 5:
             self.toRec = True
             response += np.random.choice(canRec)
         else:
@@ -560,12 +567,25 @@ class Chatbot:
         """
         newCandidates = []
         c = clarification.lower()
+        byYear = []
+            
+
         for i in candidates:
             title = self.titles[i][0]
             word = " "+c+" "
             year = "\("+c+"\)"
             if re.search(word, self.titles[i][0], flags = re.IGNORECASE) or re.search(year, self.titles[i][0]):
                 newCandidates.append(i) 
+        if len(newCandidates) == 0:
+            print(clarification)
+            for w in which.keys():
+                if w in clarification:
+                    newCandidates.append(candidates[which[w]])
+            if "last" in clarification:
+                newCandidates.append(candidates[len(candidates)-1])
+            #elif "recent" in clarification:
+                #newCandidates.append()
+            #elif "oldest" in clarification:
         return newCandidates
 
     #############################################################################
