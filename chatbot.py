@@ -776,7 +776,8 @@ class Chatbot:
         Hello! This is Marseille the Shell, your personalized movie recommender! Marseille will be asking you \
         for some movies that you liked and disliked in order to best find a movie that you may like! Marseille\
         will be able to understand your different emotions about given movies and even add some helpful suggestions
-        of its own. Why don't you give him a try? 
+        of its own. You don't need to use quotes and capitalization shouldn't matter. He can even disambiguate\
+        between several movies in a series/with the same name. Why don't you give him a try? 
         """
 
 
