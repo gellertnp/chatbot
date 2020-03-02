@@ -8,8 +8,8 @@
 # You will only receive credit for the features you mark as YES below!                  #
 #########################################################################################
 
-FEATURE - Identifying movies without quotation marks and correct capitalization (part 1): NO
-FEATURE - Identifying movies without quotation marks and correct capitalization (part 2): NO
+FEATURE - Identifying movies without quotation marks and correct capitalization (part 1): YES
+FEATURE - Identifying movies without quotation marks and correct capitalization (part 2): YES
 FEATURE - Alternate/foreign titles: YES
 FEATURE - Disambiguation (part 1): YES
 FEATURE - Fine-grained sentiment extraction: NO
@@ -29,6 +29,20 @@ Did not implement any of the above features: NO
 # Team Contributions                                                                    #
 #########################################################################################
 Please write a short description of what each team member contributed!
+
+Everyone helped debug each others' functions, but here are some broad characterizations:
+
+Kayla: Emotions, extract_titles (capitalization), greeting and goodbye, description of
+chatbot, in process: spell check dialogue 
+
+Max: Binarize, foreign/alternate titles, movies_closest_to_title, references to previous
+movies, in process: multiple sentiment communication
+
+Ella: Extract_titles (starter and no quotes), simple extract_sentiment, multiple sentiment
+extraction, widen funnel (disambiguate 1)
+
+Julia: Recommend, disambiguate (2, 3), this file, in process: arbitrary input, recommendations,
+basic feedback to user, disambiguate dialogue
 
 
 #########################################################################################

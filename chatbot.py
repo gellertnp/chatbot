@@ -228,7 +228,10 @@ class Chatbot:
                 self.lastAmbiguous = [curMovies[0], self.extract_sentiment(line)]
                 return response
             if len(curMovies[0]) == 0:
-                return "I couldn't find any movies called " + movies[0] + "."
+                if type(movies[0])==str:
+                    return "I couldn't find any movies called " + movies[0] + "."
+                else:
+                    return "I couldn't find any movies with that name, sorry!"
             self.lastAmbiguous = ["", 0]
             self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
             movie = movies[0]
