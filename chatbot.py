@@ -62,7 +62,7 @@ class Chatbot:
         articles = ["a", " an", "the"]
         self.t = pygtrie.StringTrie()
         for film in titles:
-            if film == "Hated (2004)": 
+            if "hated" in film  or "i am a fugitive" in film: 
                 continue
             else: 
                 film = self.move_start_article(film).lower()
@@ -86,7 +86,6 @@ class Chatbot:
                     if s[len(s)-1] == '/':
                         s = s[:-1]
                     self.t[s] = film
-        self.t
 
     #############################################################################
     # 1. WARM UP REPL                                                           #
@@ -188,7 +187,7 @@ class Chatbot:
 
         elif self.flags["LastSentiment"]:
             movies = self.flags["LastMovieTitle"]
-            curMovies = self.flags["LastMovie"]
+            #curMovies = self.flags["LastMovie"]
             self.flags["LastMovie"] = []
             self.flags["LastSentiment"] = False
             self.flags["LastMovieTitle"] = []
@@ -197,27 +196,26 @@ class Chatbot:
             movies = self.extract_titles(input)
             for m in movies:
                 curMovies.append(self.find_movies_by_title(m))
-        
         feelingsDown = ["sad", "angry", "depressed", "alone", "disappointed", "scared", "frightened", "mad", "furious", "upset", "anxious", "infuriated", "down", "nervous", "hopeless", "disgusted", "frustrated", "hurt", "betrayed", "rejected", "abused"]
         feelingsUp = ["happy", "joyous", "excited", "ecstatic", "overjoyed", "elated", "glad", "jubilent", "amused", "delighted" ,"pleased", "grateful", "optimistic", "content", "joyful", "enthusiastic", "assured", "certain", "encouraged", "secure"]
 
-        if len(movies) == 0:
+        if len(curMovies) == 0:
 
             if input == "Y" : 
                 return "Great! You" + sentiment + "\"" + self.movieGuess +"\"!"
 
             #diaglogue for find movies closest to title
-            if len(find_movies_closest_to_title(movies)) != 0: 
-                self.movieGuess = find_movies_closest_to_title[0]
-                return "I didn't find a movie with that title, but I found one that is close! Is " + find_movies_closest_to_title[0] + "what you meant? Please respond with Y or N"
+            if len(movies) != 0:
+                self.movieGuess = self.find_movies_closest_to_title(movies[0])
+                return "I didn't find a movie with that title, but I found one that is close! Is " + self.movieGuess + "what you meant? Please respond with Y or N"
 
             #dialogue for responding to an emotion "e.g. I am angry"
             for feelingWord in feelingsDown: 
                 if feelingWord in input:
-                    return "I am sorry that you are feeling" + feelingWord + ". Name a movie that you think might make you feel better!"
+                    return "I am sorry that you are feeling " + feelingWord + ". Name a movie that you think might make you feel better!"
             for feelingWord in feelingsUp: 
                 if feelingWord in input: 
-                    return "I am so glad that you are feeling" + feelingWord + ". Name a movie that you think might make you feel better!"
+                    return "I am so glad that you are feeling " + feelingWord + ". Name another happy movie!"
 
 
             #can't find a movie and doesnt mention a feeling 
