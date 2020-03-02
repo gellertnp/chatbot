@@ -12,7 +12,7 @@ import string
 posMovieResp = ["I'm glad you liked %s.", "Yeah, %s is a great movie!",  "I liked %s too!", "%s is a great choice.", "%s is my mom's fav!", "I CRIED when I saw %s."]
 negMovieResp = ["I'm so sorry you didn't like %s!", "Yeah, you're not the only one who didn't like %s...", "Oof, ok, I won't recommend movies like %s", "Good to know, but don't talk to my mom, she loved %s.", "%s goes on our no-show list, noted!"]
 canRec = [" You've named enough movies for a recommendation, would you like one?", " Woo! Thanks for all the movie ratings, do you want a recommendation now?", " I like your style!! Can I recommend a new movie?", " You've got good taste! Want a recommendation?"]
-cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you HATED?", " What about another movie you LOVED?"]
+cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you DISLIKED?", " What about another movie you LOVED?"]
 arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a movie, let's talk about that!", "I'd love to discuss movies, could you tell me about one you've seen?", "Let's talk about movies, please!", "I'd love to talk about that, but I'm paid to give you movie recommendations, could you name a movie please?"]
 neutMoviesResp = ["Sorry, could you let me know how you felt about %s?", "I didn't catch that. How did you feel about %s?", "Oops, I missed your reaction, how did you feel about %s?", "Yikes, something's off! How did you feel about %s?", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
 yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm", "ok", "sure"]
@@ -44,6 +44,8 @@ class Chatbot:
         self.recCount = 0
         self.createTrie(self.title_names)
 
+        self.movieGuess = ""
+
         self.p = PorterStemmer()
         #############################################################################
         # TODO: Binarize the movie ratings matrix.
@@ -60,28 +62,31 @@ class Chatbot:
         articles = ["a", " an", "the"]
         self.t = pygtrie.StringTrie()
         for film in titles:
-            film = self.move_start_article(film).lower()
+            if film == "Hated (2004)": 
+                continue
+            else: 
+                film = self.move_start_article(film).lower()
 
-            # print("FILM",film)
-            t = film.split()
-            s = ""
-            keys = []
-            for w in t:
-                w  = w.translate(str.maketrans('', '', string.punctuation))
-                dig = re.findall(r"\b\d{4}\b", w)
-                if w in dig:
-                    keys.append(s )
-                elif w in articles:
-                    keys.append(s )
-                s += w + "/"
+                # print("FILM",film)
+                t = film.split()
+                s = ""
+                keys = []
+                for w in t:
+                    w  = w.translate(str.maketrans('', '', string.punctuation))
+                    dig = re.findall(r"\b\d{4}\b", w)
+                    if w in dig:
+                        keys.append(s )
+                    elif w in articles:
+                        keys.append(s )
+                    s += w + "/"
 
-            for s in keys:
-                if s == "":
-                    continue
-                if s[len(s)-1] == '/':
-                    s = s[:-1]
-                self.t[s] = film
-
+                for s in keys:
+                    if s == "":
+                        continue
+                    if s[len(s)-1] == '/':
+                        s = s[:-1]
+                    self.t[s] = film
+        self.t
 
     #############################################################################
     # 1. WARM UP REPL                                                           #
@@ -95,9 +100,9 @@ class Chatbot:
         #############################################################################
 
         greeting_message = "Hello! Are you a human searching for a couple hours of \
-        entertainment and want an opinion from a lovely but admittedly idiotic \
-        chatbot? If so, then you're in the right place! How can I best aid your \
-        decision making process?"
+        entertainment and want an opinion from the one, the only, Marseille the Shell? \
+        If so, then you're in the right place! Why don't you start by telling me about\
+        a recent movie experience you have had?"
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -192,8 +197,30 @@ class Chatbot:
             movies = self.extract_titles(input)
             for m in movies:
                 curMovies.append(self.find_movies_by_title(m))
-        #can't find a movie
+        
+        feelingsDown = ["sad", "angry", "depressed", "alone", "disappointed", "scared", "frightened", "mad", "furious", "upset", "anxious", "infuriated", "down", "nervous", "hopeless", "disgusted", "frustrated", "hurt", "betrayed", "rejected", "abused"]
+        feelingsUp = ["happy", "joyous", "excited", "ecstatic", "overjoyed", "elated", "glad", "jubilent", "amused", "delighted" ,"pleased", "grateful", "optimistic", "content", "joyful", "enthusiastic", "assured", "certain", "encouraged", "secure"]
+
         if len(movies) == 0:
+
+            if input == "Y" : 
+                return "Great! You" + sentiment + "\"" + self.movieGuess +"\"!"
+
+            #diaglogue for find movies closest to title
+            if len(find_movies_closest_to_title(movies)) != 0: 
+                self.movieGuess = find_movies_closest_to_title[0]
+                return "I didn't find a movie with that title, but I found one that is close! Is " + find_movies_closest_to_title[0] + "what you meant? Please respond with Y or N"
+
+            #dialogue for responding to an emotion "e.g. I am angry"
+            for feelingWord in feelingsDown: 
+                if feelingWord in input:
+                    return "I am sorry that you are feeling" + feelingWord + ". Name a movie that you think might make you feel better!"
+            for feelingWord in feelingsUp: 
+                if feelingWord in input: 
+                    return "I am so glad that you are feeling" + feelingWord + ". Name a movie that you think might make you feel better!"
+
+
+            #can't find a movie and doesnt mention a feeling 
             return np.random.choice(arbitraryResp)
 
         #getting new sentiment
@@ -748,10 +775,10 @@ class Chatbot:
         can do and how the user can interact with it.
         """
         return """
-        Your task is to implement the chatbot as detailed in the PA6 instructions.
-        Remember: in thee starter mode, movie names will come in quotation marks and
-        expressions of sentimnt will be simple!
-        Write here the description for your own chatbot!
+        Hello! This is Marseille the Shell, your personalized movie recommender! Marseille will be asking you \
+        for some movies that you liked and disliked in order to best find a movie that you may like! Marseille\
+        will be able to understand your different emotions about given movies and even add some helpful suggestions
+        of its own. Why don't you give him a try? 
         """
 
 
