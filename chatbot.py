@@ -216,9 +216,10 @@ class Chatbot:
                         response += "How did you feel about " + movie + "?"
         else:
             if len(curMovies[0]) > 1:
-                response = "I have a couple movies with that name! Could you clarify?: "
-                for i in curMovies[0]:
-                    response += self.titles[i][0] + ", "
+                response = "I have a couple movies with that name! Could you clarify which of these you mean? "
+                for i in range(len(curMovies[0])-2):
+                    response += self.titles[curMovies[0][i]][0] + ", "
+                response+= self.titles[curMovies[0][len(curMovies[0])-1]][0]
                 self.lastAmbiguous = [curMovies[0], self.extract_sentiment(line)]
                 return response
             if len(curMovies[0]) == 0:
@@ -486,10 +487,8 @@ class Chatbot:
             sentiment = self.extract_sentiment(input[:end])
 
             if sentiment == 0 and len(input[:end].replace(' ', '').split()) == 1:
-                # print("HEY", prev_senti)
                 sentiment = prev_senti
             input = input[end + len(t):]
-            # print(input)
             extracted.append((t, sentiment))
             prev_senti = sentiment
         return extracted
@@ -567,8 +566,11 @@ class Chatbot:
         """
         newCandidates = []
         c = clarification.lower()
-        byYear = []
-            
+        byYear = {}
+        for i in candidates:
+            year = self.titles[i][0].split()[len(self.titles[i][0].split())-1]
+            byYear[year]=i
+        years = sorted(byYear)
 
         for i in candidates:
             title = self.titles[i][0]
@@ -577,15 +579,15 @@ class Chatbot:
             if re.search(word, self.titles[i][0], flags = re.IGNORECASE) or re.search(year, self.titles[i][0]):
                 newCandidates.append(i) 
         if len(newCandidates) == 0:
-            print(clarification)
             for w in which.keys():
                 if w in clarification:
                     newCandidates.append(candidates[which[w]])
             if "last" in clarification:
                 newCandidates.append(candidates[len(candidates)-1])
-            #elif "recent" in clarification:
-                #newCandidates.append()
-            #elif "oldest" in clarification:
+            elif "recent" in clarification:
+                newCandidates.append(byYear[years[len(byYear)-1]])
+            elif "oldest" in clarification:
+                newCandidates.append(byYear[years[0]])
         return newCandidates
 
     #############################################################################
