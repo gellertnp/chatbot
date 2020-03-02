@@ -15,7 +15,7 @@ canRec = [" You've named enough movies for a recommendation, would you like one?
 cantRec = [" Keep rating movies for a recommendation!", " I need a couple more for a rcommendation, let's hear about some more!", " You're on a roll! How about another?", " Keep it up!", " You got any more?", " What about another movie you HATED?", " What about another movie you LOVED?"]
 arbitraryResp = ["Please name a movie!", "Sorry, I'm designed to recommend a movie, let's talk about that!", "I'd love to discuss movies, could you tell me about one you've seen?", "Let's talk about movies, please!", "I'd love to talk about that, but I'm paid to give you movie recommendations, could you name a movie please?"]
 neutMoviesResp = ["Sorry, could you let me know how you felt about %s?", "I didn't catch that. How did you feel about %s?", "Oops, I missed your reaction, how did you feel about %s?", "Yikes, something's off! How did you feel about %s?", "You mentioned %s, but not whether you liked it! How did you feel about it?"]
-yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm"]
+yeses = ["yes", "yeah", "yep", "ya", "yea", "uh huh", "yas", "mhm", "ye", "mhmm", "mmhmm", "yeet", "mmhm", "mm hm", "ok", "sure"]
 nos = ["no", "nope", "nah", "negative", "nuh uh", "noo", "naw", "mm mm"]
 which = {"first": 0, "second": 1, "third": 2, "fourth": 3, "fifth": 4, "sixth": 5, "seventh": 6, "eight": 7, "ninth": 8, "tenth": 9}
 
@@ -43,7 +43,6 @@ class Chatbot:
         self.tilRec = 0
         self.recCount = 0
         self.createTrie(self.title_names)
-        print("HELLO")
 
         self.p = PorterStemmer()
         #############################################################################
@@ -153,8 +152,15 @@ class Chatbot:
             for y in yeses:
                 if y in input.lower():
                     curRecs = self.recommend(self.userRatings, self.ratings)
-                    response = "How about " + self.titles[curRecs[0]][self.recCount] + "? Want another recommendation?"
+                    response = "How about " + self.titles[curRecs[self.recCount]][0] + "? Want another recommendation?"
                     self.recCount+=1
+                    if self.recCount < len(curRecs) -1:
+                        response = "How about " + self.titles[curRecs[self.recCount]][0] + "? Want another recommendation?"
+                    else:
+                        response = "The last one I have for you is " + self.titles[curRecs[self.recCount]][0] + ". If you want some more, tell me about more movies!"
+                        self.toRec = False
+                        self.recCount = 0
+                        self.tilRec = 0
                     return response
             for n in nos:
                 if n in input.lower():
@@ -186,7 +192,6 @@ class Chatbot:
             movies = self.extract_titles(input)
             for m in movies:
                 curMovies.append(self.find_movies_by_title(m))
-
         #can't find a movie
         if len(movies) == 0:
             return np.random.choice(arbitraryResp)
@@ -348,7 +353,6 @@ class Chatbot:
                             titles.append(str(title.lower()))
 
         s = self.convert_input(preprocessed_input)
-
         while s.find("/") != -1:
             films = list(self.t.prefixes(s))
 
@@ -358,7 +362,6 @@ class Chatbot:
                     titles.append(m[1])
             s = s[s.find("/")+1:]
             # print(s, films)
-
         return titles
 
     def convert_input(self, input):
@@ -388,8 +391,7 @@ class Chatbot:
         @Kayla Ella
         """
 
-
-        # return [i for i in self.title_names if i.find(title) != -1]
+        #return [indx for indx, i in enumerate(self.title_names) if (i.find(title,0) != -1)]
         title = title.lower().translate(str.maketrans('', '', string.punctuation))
         alternate = self.move_start_article(title).translate(str.maketrans('', '', string.punctuation))
         return [indx for indx, i in enumerate(self.title_names) if (i.find(title,0) != -1 or i.find(alternate, 0) != -1)]
