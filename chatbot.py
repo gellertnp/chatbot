@@ -66,8 +66,6 @@ class Chatbot:
                 continue
             else: 
                 film = self.move_start_article(film).lower()
-
-                # print("FILM",film)
                 t = film.split()
                 s = ""
                 keys = []
@@ -777,11 +775,11 @@ class Chatbot:
         Consider adding to this description any information about what your chatbot
         can do and how the user can interact with it.
         """
-        s = ('Hello! This is Marseille the Shell, your personalized movie recommender! Marseille will be asking you\n'
-             'for some movies that you liked and disliked in order to best find a movie that you may like! Marseille\n'
-             'will be able to understand your different emotions about given movies and even add some helpful suggestions\n'
-             'of its own. You don\'t need to use quotes and capitalization shouldn\'t matter. He can even disambiguate\n'
-             'between several movies in a series/with the same name. Why don\'t you give him a try?')
+        s = ('Hello! This is Marseille the Shell, your personalized movie recommender! Marseille will be asking you for\n'
+             'some movies that you liked and disliked in order to best find a movie that you may like! Marseille will be\n'
+             'able to understand your different emotions about given movies and even add some helpful suggestions of its\n'
+             'own. You don\'t need to use quotes and capitalization shouldn\'t matter. He can even disambiguate between\n'
+             'several movies in a series/with the same name and ensure you always give him new information. Why don\'t you give him a try?')
         return s
         #"""
 
