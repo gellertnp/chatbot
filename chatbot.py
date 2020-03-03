@@ -98,10 +98,10 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        greeting_message = "Hello! Are you a human searching for a couple hours of \
-        entertainment and want an opinion from the one, the only, Marseille the Shell? \
-        If so, then you're in the right place! Why don't you start by telling me about\
-        a recent movie experience you have had?"
+        greeting_message = ('Hello! Are you a human searching for a couple hours of' 
+        'entertainment and want an opinion from the one, the only, Marseille the Shell?' 
+        'If so, then you\'re in the right place! Why don\'t you start by telling me about'
+        'a recent movie experience you have had?')
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -115,8 +115,8 @@ class Chatbot:
         # @Kayla
         #############################################################################
 
-        goodbye_message = "Hope your intended entertainment plans work out \
-        and your friends don't flake! Have a nice life."
+        goodbye_message = ('Hope your intended entertainment plans work out'
+        'and your friends don\'t flake! Have a nice life.')
 
         #############################################################################
         #                             END OF YOUR CODE                              #
@@ -258,11 +258,17 @@ class Chatbot:
                 else:
                     return "I couldn't find any movies with that name, sorry!"
             self.lastAmbiguous = ["", 0]
-            self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
-            movie = movies[0]
+            titles = []
+            for t in self.titles:
+                titles.append(t[0])
+            cur = self.titles[curMovies[0][0]]
+            movie = cur[0] 
 
-            cur = self.titles[curMovies[0][0]]    
-            movie = cur[0]
+            if self.userRatings[titles.index(movie)] != 0:
+                return "You've already mentioned that one! How about a different one?"
+
+            self.userRatings[curMovies[0][0]] = self.extract_sentiment(line)
+
             self.tilRec+=1
             if sentiment == "liked ":
                 response = np.random.choice(posMovieResp) % movie
@@ -278,7 +284,6 @@ class Chatbot:
             response += np.random.choice(canRec)
         else:
             response += np.random.choice(cantRec)
-
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -772,13 +777,13 @@ class Chatbot:
         Consider adding to this description any information about what your chatbot
         can do and how the user can interact with it.
         """
-        return """
-        Hello! This is Marseille the Shell, your personalized movie recommender! Marseille will be asking you \
-        for some movies that you liked and disliked in order to best find a movie that you may like! Marseille\
-        will be able to understand your different emotions about given movies and even add some helpful suggestions
-        of its own. You don't need to use quotes and capitalization shouldn't matter. He can even disambiguate\
-        between several movies in a series/with the same name. Why don't you give him a try? 
-        """
+        s = ('Hello! This is Marseille the Shell, your personalized movie recommender! Marseille will be asking you\n'
+             'for some movies that you liked and disliked in order to best find a movie that you may like! Marseille\n'
+             'will be able to understand your different emotions about given movies and even add some helpful suggestions\n'
+             'of its own. You don\'t need to use quotes and capitalization shouldn\'t matter. He can even disambiguate\n'
+             'between several movies in a series/with the same name. Why don\'t you give him a try?')
+        return s
+        #"""
 
 
 if __name__ == '__main__':
